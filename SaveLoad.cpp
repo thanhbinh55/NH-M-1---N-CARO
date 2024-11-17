@@ -1,29 +1,6 @@
 ﻿#include "SaveLoad.h"
+#include "Draw.h"
 
-void DrawLoaded(_POINT _A[][BOARD_SIZE])
-{
-	system("Color F0");
-	FixConsoleWindow();
-	DrawBound();
-	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
-	DrawGuideGame(3,35);
-	Draw_infor(70, 3, 28, 10, Player_1);
-	Draw_infor(105, 3, 28, 10, Player_2);
-	for (int i = 0; i < BOARD_SIZE; i++) {
-		for (int j = 0; j < BOARD_SIZE; j++) {
-			if (_A[i][j].c == -1) {
-				SetColor(4, 15);
-				GotoXY(_A[i][j].x, _A[i][j].y);
-				cout << "X";
-			}
-			else if (_A[i][j].c == 1) {
-				SetColor(1, 15);
-				GotoXY(_A[i][j].x, _A[i][j].y);
-				cout << "O";
-			}
-		}
-	}
-}
 
 void SaveData(string filename) {
 	ofstream savefile;
@@ -36,10 +13,11 @@ void SaveData(string filename) {
 	savefile << Player_1.Name << endl;
 	savefile << Player_1.Moves << endl;
 	savefile << Player_1.Wins << endl;
+	savefile << Player_1.Character << endl;
 	savefile << Player_2.Name << endl;
 	savefile << Player_2.Moves << endl;
 	savefile << Player_2.Wins << endl;
-
+	savefile << Player_2.Character << endl;
 	savefile << _TURN << endl;
 
 	for (int i = 0; i < BOARD_SIZE; i++) {
@@ -50,24 +28,30 @@ void SaveData(string filename) {
 	}
 	savefile.close();
 }
+
 void Savegame_opt() {
 	system("cls");
 	system("color F0");
+	DrawBound();
 	ShowCur(true);
 	string filename;
 	vector<string> files = LoadFiles();
 
 	int j = 12;
-	GotoXY(40, 11);
+	GotoXY(50, 10);
 	cout << "Danh sach file game da luu: ";
 	for (int i = 0; i < files.size(); i++) {
-		GotoXY(40, j);
+		GotoXY(50, j);
 		cout << files[i];
 		j++;
 	}
 
-	GotoXY(40, j);
+	GotoXY(50, j);
+	
+	
+	//cout << "";
 	cout << "Nhap ten file ban muon tai: ";
+	//cin.ignore();
 	getline(cin, filename);
 	if (filename.substr(filename.length() - 4) != ".txt") {
 		filename += ".txt";
@@ -91,23 +75,25 @@ void SaveGame() {
 	int i = 2;
 	system("cls");
 	system("color F0");
-	//printLogo(0);
-	//DrawXO();
-	GotoXY(40, 15);
+	DrawBound();
+	GotoXY(50, 35);
 	SetColor(0, 15);
 
-	cout << "Nhap file name ban muon luu: ";
+	
+	cout << "Enter game's name: ";
+	//cin.ignore();
 	do {
+		
 		getline(cin, filename);
 		filename += ".txt";
 		if (!CheckFileExistence(filename)) {
-			Draw_Guide(56, 35, "Luu game thanh cong.");
+			Draw_Guide(56, 35, "Save succesfully.            ");
 			cout << endl;
 			break;
 		}
 		else {
-			GotoXY(40, 15 + i);
-			cout << "Nhap lai ten khac: ";
+			GotoXY(50, 15 + i);
+			cout << "Enter another name: ";
 			i += 2;
 		}
 	} while (1);
@@ -129,7 +115,7 @@ bool CheckFileExistence(string filename) {
 
 	// Kiểm tra xem file có mở thành công không
 	if (!savedfile.is_open()) {
-		cout << "Không thể mở file Gamelist.txt!" << endl;
+		cout << "Khong the mo file Gamelist.txt!" << endl;
 		return false; // Trả về false nếu không mở được file
 	}
 
@@ -148,7 +134,7 @@ void LoadData(string filename) {
 
 	// Kiểm tra xem file có mở thành công không
 	if (!loadfile.is_open()) {
-		cout << "Không thể mở file: " << filename << endl;
+		cout << "Khong the mo file: " << filename << endl;
 		return; // Thoát khỏi hàm nếu không mở được file
 	}
 
@@ -159,15 +145,18 @@ void LoadData(string filename) {
 		string name = "";
 		int moves = 0;
 		int wins = 0;
+		string character = "";
 
 		if (i == 1) {
 			loadfile.ignore(); // Bỏ qua dòng trước đó nếu cần
 		}
 		getline(loadfile, name);
 		loadfile >> moves >> wins;
+		getline(loadfile, character);
 		P[i].Name = name;
 		P[i].Moves = moves;
 		P[i].Wins = wins;
+		P[i].Character = character;
 	}
 
 	loadfile >> turn;
@@ -176,7 +165,7 @@ void LoadData(string filename) {
 		for (int j = 0; j < BOARD_SIZE; j++) {
 			int x = 0;
 			if (!(loadfile >> x)) {
-				cout << "Lỗi khi đọc dữ liệu từ file!" << endl;
+				cout << "Loi khi doc du lieu tu file22!" << endl;
 				return; // Thoát nếu không đọc được dữ liệu
 			}
 			_A[i][j].x = 4 * j + LEFT + 2; // Trung với hoành độ bàn cờ
@@ -202,7 +191,7 @@ vector<string> LoadFiles() {
 	ifstream savedFile("Gamelist.txt");
 	// Kiểm tra xem file có mở thành công không
 	if (!savedFile.is_open()) {
-		cout << "Không thể mở file Gamelist.txt!" << endl;
+		cout << "Khong the mo fiele file Gamelist.txt!" << endl;
 		return files; // Trả về danh sách rỗng
 	}
 
@@ -220,7 +209,7 @@ void LoadGame(string filename) {
 	ShowCur(true);
 	// Kiểm tra xem file có tồn tại không
 	if (!CheckFileExistence(filename)) {
-		cout << "File không tồn tại!" << endl;
+		cout << "File khong ton tai!" << endl;
 		return; // Thoát nếu file không tồn tại
 	}
 
@@ -228,7 +217,7 @@ void LoadGame(string filename) {
 
 	// Kiểm tra lại _A có được cập nhật không
 	if (_A[0][0].c == -1 && _A[0][0].x == 0 && _A[0][0].y == 0) {
-		cout << "Không có dữ liệu để tải!" << endl;
+		cout << "Khong co du lieu de tai!" << endl;
 		return; // Thoát nếu không có dữ liệu
 	}
 

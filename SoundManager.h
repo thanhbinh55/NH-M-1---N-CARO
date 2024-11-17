@@ -13,6 +13,8 @@ extern bool firstTime;
 
 void playBackgroundMusic(bool play);
 void playGameMusic(bool play);
+void playDRAWGameMusic();
+void playWINGameMusic();
 void playMoveSound();
 void playSelectSound();
 

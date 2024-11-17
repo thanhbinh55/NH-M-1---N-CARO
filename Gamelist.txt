@@ -1,11 +1,6 @@
 .txt
-binh.txt
-saasdas.txt
-aaa.txt
-aaaasdasd.txt
-f.txt
-ll.txt
-aaadawd.txt
-pp.txt
-o.txt
-l.txt
+nhommot.txt
+nhommotkhtn.txt
+nhommot2.txt
+nhom1.txt
+khtnkhtn.txt

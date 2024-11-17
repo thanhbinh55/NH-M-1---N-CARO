@@ -1,5 +1,15 @@
 ﻿#include "Draw.h"
-
+#include "SoundManager.h"
+void DrawScreen()
+{
+	FixConsoleWindow();
+	DrawBound();
+	DrawLogoCaro(45, 5);
+	SetColor(0, 15);
+	Draw_Guide(50, 35, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText);
+	DrawDragonWomen(103, 17);
+	DrawDragonMen(13, 17);
+}
 void SSetColor(int mauBg, int mauchu) {
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(hStdOut, (mauBg << 4) | mauchu);
@@ -105,106 +115,414 @@ void Draw_Guide(int x, int y, string nd)
 	GotoXY(x, y); cout << nd;
 }
 
-void Draw_infor(int x, int y, int w, int h, const Player& player)
+
+void Draw_infor1(int x, int y, int w, int h)
 {
-	if (player.Name == Player_1.Name)
-	{
-		SetColor(4, 15);
-		Box(x, y, w, h);
-		string s = "";
-		// Hiển thị thông tin của Player 1
-		GotoXY(x + 2, y + 1);
-		cout << "Player 1 (X): " << player.Name;
-
-		// Hiển thị số bước di chuyển (Moves)
-		s = "Moves: " + to_string(player.Moves);
-		GotoXY(x + 2, y + 2);
-		cout << s;
-
-		// Hiển thị số lượt thắng (Wins)
-		s = "Wins: " + to_string(player.Wins);
-		GotoXY(x + 2, y + 3);
-		cout << s;
-		SetColor(0, 15);
-		// Bạn có thể tiếp tục thêm các thông tin khác nếu cần
-	}
-	else
-	{
-		SetColor(1, 15);
-		Box(x, y, w, h);
-		string s = "";
-		// Hiển thị thông tin của Player 1
-		GotoXY(x + 2, y + 1);
-		cout << "Player 2 (O): " << player.Name;
-
-		// Hiển thị số bước di chuyển (Moves)
-		s = "Moves: " + to_string(player.Moves);
-		GotoXY(x + 2, y + 2);
-		cout << s;
-
-		// Hiển thị số lượt thắng (Wins)
-		s = "Wins: " + to_string(player.Wins);
-		GotoXY(x + 2, y + 3);
-		cout << s;
-		SetColor(0, 15);
-		// Bạn có thể tiếp tục thêm các thông tin khác nếu cần
-	}
-}
-
-void Draw_infor2(int x, int y, int w, int h, const Player& player)
-{
-	if (player.Name == Player_1.Name)
-	{
-		SetColor(4, 15);
-		Box(x, y, w, h);
-		string s = "";
-
-		// Hiển thị thông tin của Player 1
+	if (_TURN) {
 		GotoXY(x + 2, y + 1);
 		SetColor(15, 0);
 		cout << "Player 1 (X): ";
-		SetColor(4, 15);
-		cout << player.Name;
-	
-		// Hiển thị số bước di chuyển (Moves)
-		s = "Moves: " + to_string(player.Moves);
-		GotoXY(x + 2, y + 2);
-		cout << s;
-
-		// Hiển thị số lượt thắng (Wins)
-		s = "Wins: " + to_string(player.Wins);
-		GotoXY(x + 2, y + 3);
-		cout << s;
-		SetColor(0, 15);
-		// Bạn có thể tiếp tục thêm các thông tin khác nếu cần
+		GotoXY(x + 2 + 35, y + 1);
+		SetColor(1, 15);
+		cout << "Player 2 (O): ";
 	}
 	else
 	{
-		SetColor(1, 15);
-		Box(x, y, w, h);
-		string s = "";
-
-		// Hiển thị thông tin của Player 1
 		GotoXY(x + 2, y + 1);
+		SetColor(4, 15);
+		cout << "Player 1 (X): ";
+		GotoXY(x + 2 + 35, y + 1);
 		SetColor(15, 0);
 		cout << "Player 2 (O): ";
 		SetColor(1, 15);
-		cout << player.Name;
+	}
+	GotoXY(x + 2  + 15, y + 1);
+	SetColor(4, 15);
+	cout << Player_1.Name;
+	Box(x, y, w, h + 3);
+	string s = "";
+	s = "Moves: " + to_string(Player_1.Moves);
+	GotoXY(x + 2, y + 2);
+	cout << s;
+	s = "Wins: " + to_string(Player_1.Wins);
+	GotoXY(x + 2, y + 3);
+	cout << s;
+	SetColor(0, 15);
+	DrawChooseAvatar(Player_1, x, y);
 
-		// Hiển thị số bước di chuyển (Moves)
-		s = "Moves: " + to_string(player.Moves);
+	string s2 = "";
+	SetColor(1, 15);
+	Box(x + 35, y, w, h + 3);
+	GotoXY(x + 2 + 35 + 15, y + 1);
+	cout << Player_2.Name;
+
+	s2 = "Moves: " + to_string(Player_2.Moves);
+	GotoXY(x + 2 + 35, y + 2);
+	cout << s2;
+	s2 = "Wins: " + to_string(Player_2.Wins);
+	GotoXY(x + 2 + 35, y + 3);
+	cout << s2;
+	SetColor(0, 15);
+	DrawChooseAvatar(Player_2, x + 35, y);
+
+	
+}
+void Draw_infor(int x, int y, int w, int h)
+{
+		if (!_TURN) {
+			GotoXY(x + 2, y + 1);
+			SetColor(15, 0);
+			cout << "Player 1 (X): ";
+			GotoXY(x + 2 + 35, y + 1);
+			SetColor(1, 15);
+			cout << "Player 2 (O): ";
+		}
+		else
+		{
+			GotoXY(x + 2, y + 1);
+			SetColor(4, 15);
+			cout << "Player 1 (X): ";
+
+
+			GotoXY(x + 2 + 35, y + 1);
+			SetColor(15, 0);
+			cout << "Player 2 (O): ";
+			SetColor(1, 15);
+		}
+		GotoXY(x + 2 + 15, y + 1);
+		SetColor(4, 15);
+		cout << Player_1.Name;
+		Box(x, y, w, h + 3);
+		string s = "";
+		s = "Moves: " + to_string(Player_1.Moves);
 		GotoXY(x + 2, y + 2);
 		cout << s;
-
-		// Hiển thị số lượt thắng (Wins)
-		s = "Wins: " + to_string(player.Wins);
+		s = "Wins: " + to_string(Player_1.Wins);
 		GotoXY(x + 2, y + 3);
 		cout << s;
 		SetColor(0, 15);
-		// Bạn có thể tiếp tục thêm các thông tin khác nếu cần
-	}
-}
 
+		DrawChooseAvatar(Player_1, x, y);
+		string s2 = "";
+		SetColor(1, 15);
+		Box(x + 35, y, w, h + 3);
+		GotoXY(x + 2 + 35 + 15, y + 1);
+		cout << Player_2.Name;
+		s2 = "Moves: " + to_string(Player_2.Moves);
+		GotoXY(x + 2 + 35, y + 2);
+		cout << s2;
+		s2 = "Wins: " + to_string(Player_2.Wins);
+		GotoXY(x + 2 + 35, y + 3);
+		cout << s2;
+		SetColor(0, 15);
+		DrawChooseAvatar(Player_2, x + 35, y);
+	
+}
+void DrawRedDragon(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[22][22] = {
+	   {15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 4, 0, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 4, 4, 0, 15, 15, 0, 4, 4, 0, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 0, 4, 4, 4, 0, 15, 15, 0, 4, 4, 4, 0, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 0, 4, 4, 4, 0, 15, 15, 15, 0, 4, 4, 0, 0, 0, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 6, 4, 0, 15, 15, 15, 0, 0, 4, 4, 0, 4, 0, 15, 15, 15},
+	   {15, 15, 15, 0, 0, 4, 6, 0, 15, 15, 15, 0, 4, 4, 4, 4, 4, 4, 4, 0, 15, 15},
+	   {15, 15, 0, 0, 4, 4, 0, 15, 15, 15, 0, 4, 4, 4, 4, 4, 4, 4, 4, 0, 15, 15},
+	   {15, 0, 4, 4, 4, 0, 15, 15, 15, 15, 0, 4, 4, 4, 0, 4, 4, 4, 4, 4, 0, 15},
+	   {0, 4, 4, 4, 0, 15, 15, 15, 15, 0, 0, 4, 4, 4, 15, 0, 4, 4, 4, 4, 4, 0},
+	   {0, 4, 4, 4, 0, 15, 15, 0, 0, 4, 4, 0, 4, 0, 15, 0, 0, 4, 4, 4, 4, 0},
+	   {0, 4, 4, 4, 4, 0, 0, 4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0, 15},
+	   {0, 0, 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4, 4, 0, 4, 4, 4, 0, 0, 15, 15},
+	   {15, 0, 4, 4, 4, 4, 4, 0, 4, 0, 4, 4, 14, 14, 0, 0, 0, 0, 4, 4, 0, 15},
+	   {15, 15, 0, 4, 0, 4, 4, 0, 4, 15, 0, 14, 14, 14, 0, 15, 15, 0, 4, 4, 15, 0},
+	   {15, 15, 15, 0, 0, 4, 4, 0, 4, 4, 4, 0, 14, 0, 15, 15, 15, 15, 0, 15, 4, 0},
+	   {15, 15, 15, 15, 0, 4, 4, 4, 0, 4, 15, 0, 14, 0, 0, 15, 15, 15, 15, 0, 0, 15},
+	   {15, 15, 15, 15, 0, 0, 4, 4, 4, 0, 0, 14, 0, 4, 15, 0, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 0, 4, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 0, 15, 4, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	   {15, 15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 22; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 22; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawPikachu(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[20][21] = {
+		 {15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15},
+		 {15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 0, 6, 6, 0, 15},
+		 {15, 15, 15, 15, 0, 14, 14, 0, 15, 15, 15, 15, 0, 0, 0, 0, 6, 6, 6, 6, 0},
+		 {15, 15, 15, 15, 0, 14, 14, 0, 15, 15, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 0},
+		 {15, 15, 15, 0, 0, 14, 0, 15, 15, 0, 14, 14, 14, 0, 6, 6, 6, 6, 6, 0, 15},
+		 {15, 15, 0, 14, 14, 14, 14, 0, 0, 14, 14, 14, 0, 6, 6, 6, 6, 6, 0, 15, 15},
+		 {15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 0, 6, 6, 6, 6, 6, 0, 15, 15, 15},
+		 {15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 0, 0, 6, 6, 6, 0, 15, 15, 15, 15},
+		 {0, 14, 14, 14, 14, 14, 15, 0, 14, 14, 14, 0, 15, 0, 6, 6, 6, 0, 15, 15, 15},
+		 {0, 14, 0, 14, 14, 14, 0, 0, 14, 14, 14, 14, 0, 15, 0, 6, 6, 0, 15, 15, 15},
+		 {15, 0, 14, 14, 14, 14, 14, 4, 4, 14, 14, 14, 14, 0, 6, 6, 0, 15, 15, 15, 15},
+		 {0, 14, 0, 14, 14, 14, 14, 4, 4, 14, 14, 14, 14, 0, 6, 0, 15, 15, 15, 15, 15},
+		 {15, 0, 0, 0, 14, 14, 14, 14, 0, 14, 14, 14, 14, 14, 0, 6, 0, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 0, 14, 14, 0, 14, 14, 0, 14, 14, 14, 0, 0, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 14, 0, 15, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 0, 0, 14, 14, 14, 14, 14, 14, 14, 0, 0, 15, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 0, 14, 0, 0, 0, 14, 14, 14, 14, 0, 15, 15, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 15, 0, 0, 15, 15, 0, 0, 14, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+		 {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 20; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 21; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawBlueBoom(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[20][19] = {
+	{15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 15, 0, 3, 3, 0, 0, 0, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 0, 3, 3, 3, 0, 3, 3, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 0, 0, 3, 3, 3, 0, 3, 3, 3, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 15, 15, 15, 15, 15},
+	{15, 15, 0, 0, 0, 3, 3, 3, 0, 0, 0, 3, 3, 0, 15, 15, 15, 15, 15},
+	{15, 15, 0, 15, 15, 0, 3, 0, 15, 15, 15, 0, 3, 3, 0, 15, 15, 15, 15},
+	{15, 0, 15, 0, 15, 15, 0, 15, 0, 15, 14, 0, 3, 3, 0, 15, 15, 15, 15},
+	{15, 0, 14, 14, 0, 0, 0, 0, 14, 14, 14, 0, 3, 3, 3, 0, 15, 15, 15},
+	{15, 0, 12, 0, 6, 6, 6, 6, 0, 12, 12, 12, 3, 3, 3, 0, 15, 15, 15},
+	{0, 6, 6, 6, 6, 6, 6, 6, 6, 0, 12, 3, 3, 3, 3, 0, 15, 15, 15},
+	{15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 0, 0, 0, 0},
+	{15, 0, 3, 0, 6, 6, 6, 6, 0, 3, 3, 3, 3, 3, 3, 0, 0, 0, 15},
+	{15, 0, 3, 3, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0},
+	{15, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 15, 15},
+	{15, 15, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 15, 0, 0, 15},
+	{15, 15, 15, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 0, 0, 3, 3, 3, 3, 3, 0, 0, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 20; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 19; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawRedBoom(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[20][20] = {
+	  {15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 15, 15, 0, 12, 12, 12, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 15, 0, 0, 12, 12, 12, 12, 0, 15, 15, 15, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 0, 12, 12, 0, 12, 12, 12, 12, 0, 15, 15, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 15, 0, 0, 12, 12, 12, 0, 0, 12, 12, 0, 15, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 15},
+	  {15, 15, 15, 15, 0, 12, 12, 0, 0, 0, 0, 12, 12, 12, 12, 0, 0, 0, 15, 15},
+	  {15, 15, 15, 15, 0, 12, 12, 0, 0, 0, 0, 0, 12, 12, 0, 0, 0, 0, 0, 15},
+	  {15, 0, 15, 0, 12, 12, 12, 12, 0, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15},
+	  {0, 15, 0, 0, 12, 12, 12, 12, 0, 15, 15, 0, 0, 15, 0, 0, 15, 0, 0, 0},
+	  {0, 0, 0, 0, 12, 12, 12, 12, 12, 0, 15, 15, 15, 0, 0, 15, 15, 0, 12, 0},
+	  {15, 0, 0, 0, 12, 12, 12, 12, 12, 12, 0, 0, 0, 6, 6, 0, 0, 12, 12, 0},
+	  {0, 15, 0, 0, 12, 12, 12, 12, 12, 12, 12, 0, 6, 6, 6, 6, 6, 0, 12, 0},
+	  {15, 15, 15, 0, 12, 12, 12, 12, 12, 14, 14, 0, 6, 0, 6, 6, 6, 6, 0, 0},
+	  {15, 15, 15, 15, 0, 12, 12, 12, 14, 14, 14, 14, 0, 6, 0, 0, 0, 0, 12, 0},
+	  {15, 15, 15, 15, 15, 0, 12, 12, 14, 14, 14, 14, 14, 0, 0, 14, 14, 12, 0, 15},
+	  {15, 15, 15, 15, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15},
+	  {15, 15, 15, 15, 15, 15, 15, 0, 0, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 15},
+	  {15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 20; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 20; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawBlackBoom(int x, int y)
+{
+	int BlackBoom[20][19] = {
+	{15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 15, 15, 0, 6, 6, 0, 15, 15, 15, 15, 15, 15, 15},
+	{15, 4, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	{15, 15, 4, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 4, 15, 15},
+	{15, 15, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 15, 15, 15},
+	{15, 15, 0, 0, 8, 8, 4, 0, 0, 0, 0, 0, 4, 8, 8, 0, 15, 15, 15},
+	{15, 0, 0, 8, 15, 0, 8, 4, 0, 0, 0, 4, 8, 15, 0, 8, 0, 15, 15},
+	{15, 0, 8, 8, 15, 15, 8, 0, 0, 0, 0, 0, 8, 15, 15, 8, 0, 15, 15},
+	{0, 0, 8, 8, 8, 8, 8, 0, 0, 6, 6, 6, 6, 8, 8, 0, 0, 0, 15},
+	{0, 0, 0, 8, 8, 8, 0, 0, 6, 0, 0, 0, 6, 6, 0, 0, 0, 0, 15},
+	{0, 0, 0, 0, 0, 0, 0, 6, 0, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8, 0, 0, 0, 0, 0, 0, 15},
+	{15, 0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 0, 15, 15},
+	{15, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0, 15, 15},
+	{15, 15, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 15, 15, 15},
+	{15,15, 15, 0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 0, 0, 15, 15, 15, 15},
+	{15,15, 15, 15, 0, 0, 0, 8, 8, 8, 8, 0, 0, 0, 15, 15, 15, 15, 15},
+	{15,15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15}
+	};
+	SetConsoleOutputCP(CP_UTF8);
+
+	for (int i = 0; i < 20; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 19; x++)
+		{
+
+			SSetColor(BlackBoom[i][x], BlackBoom[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawYellowBoom(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[22][22] = {
+	 {15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 0, 0, 0, 14, 14, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 0, 0, 0, 0, 14, 14, 14, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 0, 14, 14, 14, 14, 14, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 0, 14, 14, 14, 14, 14, 14, 0, 15, 15, 15, 15, 15, 15, 15},
+	 {0, 15, 15, 15, 0, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 0, 15, 15, 15},
+	 {0, 0, 15, 0, 0, 15, 0, 0, 0, 14, 14, 14, 14, 14, 14, 14, 0, 0, 0, 15, 15, 15},
+	 {0, 0, 0, 0, 0, 0, 14, 14, 0, 0, 0, 14, 14, 14, 0, 0, 0, 0, 15, 15, 15, 15},
+	 {0, 0, 0, 0, 0, 0, 14, 14, 0, 0, 0, 0, 14, 0, 0, 0, 0, 14, 0, 15, 15, 15},
+	 {15, 15, 0, 0, 0, 14, 14, 0, 15, 3, 0, 14, 14, 14, 0, 15, 3, 0, 0, 15, 15, 15},
+	 {0, 0, 0, 0, 0, 14, 14, 0, 3, 3, 0, 14, 0, 0, 0, 3, 3, 0, 14, 0, 15, 15},
+	 {15, 0, 0, 0, 14, 14, 14, 14, 0, 0, 14, 0, 6, 6, 6, 0, 0, 14, 14, 0, 15, 15},
+	 {0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 0, 6, 6, 6, 6, 6, 6, 0, 14, 14, 0, 15},
+	 {15, 15, 0, 14, 14, 14, 14, 14, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 15},
+	 {15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 0, 6, 6, 0, 15, 14, 14, 14, 14, 0},
+	 {15, 15, 0, 0, 14, 14, 14, 14, 14, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 0, 0},
+	 {15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 22; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 22; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawGreenBoom(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[22][22] = {
+	 {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 0, 0, 0, 15, 0, 0, 2, 2, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 15, 0, 0, 0, 0, 0, 15, 15, 15},
+	 {15, 15, 15, 15, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 6, 6, 6, 6, 6, 0, 0, 15},
+	 {15, 15, 15, 0, 2, 15, 0, 0, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0},
+	 {15, 15, 0, 2, 15, 15, 15, 0, 0, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0},
+	 {15, 0, 2, 2, 15, 15, 0, 15, 2, 6, 6, 6, 6, 6, 6, 0, 15, 15, 15, 15, 15, 15},
+	 {0, 2, 2, 2, 2, 15, 15, 2, 6, 6, 6, 6, 6, 0, 2, 2, 0, 15, 15, 15, 15, 15},
+	 {0, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 0, 0, 0, 0, 2, 2, 0, 15, 15, 15, 15},
+	 {0, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 15, 15, 15},
+	 {0, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 15, 15},
+	 {15, 0, 2, 2, 2, 2, 2, 2, 15, 15, 15, 15, 15, 6, 6, 6, 6, 6, 6, 6, 0, 15},
+	 {15, 0, 2, 2, 2, 2, 15, 15, 15, 15, 15, 15, 15, 15, 15, 6, 6, 0, 0, 6, 6, 0},
+	 {15, 15, 0, 2, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 15, 15, 0, 0, 15},
+	 {15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+	 {15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 22; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 22; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void DrawPig(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[22][22] = {
+	{15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 0, 10, 10, 10, 0, 15, 15, 15, 15, 0, 10, 10, 10, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 0, 10, 0, 10, 0, 15, 15, 15, 15, 0, 10, 0, 10, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 0, 10, 10, 10, 0, 0, 0, 0, 0, 0, 10, 10, 0, 15, 15, 15, 15, 15, 15},
+	{15, 15, 15, 15, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 15, 15, 15, 15, 15},
+	{15, 15, 15, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 15, 15, 15, 15},
+	{15, 15, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 15, 15, 15},
+	{15, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 15, 15},
+	{15, 0, 10, 10, 10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 10, 10, 0, 15},
+	{15, 0, 10, 10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 10, 0, 15},
+	{0, 10, 10, 10, 10, 10, 10, 10, 10, 2, 2, 2, 2, 2, 2, 10, 10, 10, 10, 10, 10, 0},
+	{0, 10, 10, 0, 0, 0, 10, 10, 2, 10, 10, 10, 10, 10, 10, 2, 10, 10, 0, 0, 0, 0},
+	{0, 10, 0, 15, 15, 15, 0, 2, 10, 0, 0, 10, 10, 10, 10, 10, 2, 0, 15, 15, 15, 0},
+	{0, 10, 0, 0, 15, 15, 0, 2, 10, 0, 0, 10, 10, 0, 0, 10, 2, 0, 15, 15, 0, 0},
+	{0, 10, 0, 15, 15, 15, 0, 2, 10, 10, 10, 10, 10, 10, 10, 10, 2, 0, 15, 15, 15, 0},
+	{0, 10, 10, 0, 0, 0, 10, 10, 2, 10, 10, 10, 10, 10, 10, 10, 2, 10, 0, 0, 0, 0},
+	{15, 0, 10, 10, 10, 10, 10, 10, 10, 2, 2, 2, 2, 2, 2, 2, 10, 10, 10, 10, 10, 0},
+	{15, 0, 10, 10, 10, 10, 10, 10, 10, 2, 10, 10, 10, 10, 10, 2, 10, 10, 10, 10, 0, 15},
+	{15, 15, 0, 10, 10, 10, 10, 10, 10, 10, 2, 2, 2, 2, 2, 10, 10, 10, 10, 0, 15, 15},
+	{15, 15, 15, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 15, 15, 15},
+	{15, 15, 15, 15, 0, 0, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0, 0, 15, 15, 15, 15},
+	{15, 15, 15, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 22; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 22; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
 void DrawDragonWomen(int x, int y)
 {
 	int mang[30][27] = {
@@ -288,7 +606,7 @@ void DrawDragonMen(int x, int y)
 	   {15, 15, 15, 0, 4, 12, 12, 12, 12, 15, 12, 0, 4, 4, 12, 12, 15, 12, 0, 15, 15, 15, 15, 15, 15, 15, 15},
 	   {15, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 0, 12, 12, 12, 12, 12, 12, 0, 15, 15, 15, 15, 15, 15, 15, 15}
 	};
-	
+
 	SetConsoleOutputCP(CP_UTF8);
 
 	for (int i = 0; i < 30; i = i + 2)
@@ -331,7 +649,7 @@ void DrawLogoCaro(int x, int y) {
 	SetConsoleOutputCP(CP_UTF8);
 	for (int i = 0; i < 16; i = i + 2)
 	{
-		 GotoXY(x, y + i / 2);
+		GotoXY(x, y + i / 2);
 		for (int x = 0; x < 54; x++)
 		{
 			SSetColor(matrix[i][x], matrix[i + 1][x]);
@@ -341,7 +659,7 @@ void DrawLogoCaro(int x, int y) {
 	SetConsoleOutputCP(437);
 
 }
-void DrawDRAW(int x, int y){
+void DrawDRAW(int x, int y) {
 	int matrix[14][52] = {
 {0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0},
 {0, 15, 15, 12, 12, 12, 12, 0, 0, 15, 15, 15, 0, 15, 15, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 0, 15, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 15, 15, 12, 12, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 0},
@@ -371,7 +689,179 @@ void DrawDRAW(int x, int y){
 	}
 	SetConsoleOutputCP(437);
 }
-void DrawWIN(int x, int y) {
+void drawSelectionBox(int x, int y, int color) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x - 3, y - 2);
+	SSetColor(15, color); // Màu khung chọn
+	cout << u8"╔══════════════════════════╗";
+	GotoXY(x - 3, y + 11);
+	cout << u8"╚══════════════════════════╝";
+	for (int i = -1; i < 11; i++) {
+		GotoXY(x - 3, y + i);
+		cout << u8"║";
+		GotoXY(x + 24, y + i);
+		cout << u8"║";
+	}
+	SetConsoleOutputCP(437);
+}
+void clearSelectionBox(int x, int y) {
+	GotoXY(x - 3, y - 2);
+	cout << "                            ";
+	GotoXY(x - 3, y + 11);
+	cout << "                            ";
+	for (int i = -1; i < 11; i++) {
+		GotoXY(x - 3, y + i);
+		cout << " ";
+		GotoXY(x + 24, y + i);
+		cout << " ";
+	}
+}
+void ChooseAvatar() {
+	system("cls");
+	system("color f0");
+	Draw_Guide(50, 37, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText);
+	ShowCur(false);
+	DrawBound();
+	int positions[8][2] = { {15, 8}, {45, 8}, {75, 8}, {105, 8},
+							{15, 23}, {45, 23}, {75, 23}, {105, 23} };
+	string labels[8] = {
+		"Red", "Green", "Yellow", "Black",
+		"Blue", "Pig", "Dragon", "Pikachu"
+	};
+	//Options Avatar
+	DrawRedBoom(positions[0][0], positions[0][1]);
+	DrawGreenBoom(positions[1][0], positions[1][1]);
+	DrawYellowBoom(positions[2][0], positions[2][1]);
+	DrawBlackBoom(positions[3][0], positions[3][1]);
+	DrawBlueBoom(positions[4][0], positions[4][1]);
+	DrawPig(positions[5][0], positions[5][1]);
+	DrawRedDragon(positions[6][0], positions[6][1]);
+	DrawPikachu(positions[7][0], positions[7][1]);
+	//
+
+	int currentPos = 0;
+	int playerturn = 1;
+	int count = 0;
+	int sum = 0;
+	int s = true;
+	bool occupied[8] = { false };
+	drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+
+	while (s == true) {
+		if (_kbhit) {
+			char key = _getch();
+
+			// Xóa khung chọn cũ
+			clearSelectionBox(positions[currentPos][0], positions[currentPos][1]);
+
+			// Cập nhật vị trí mới
+
+
+			if (key == 'a') {
+				playMoveSound();
+				// Di chuyển sang trái
+				if (currentPos == 4) currentPos = 3;  // Chuyển từ đầu dòng 2 (ô thứ 4) sang cuối dòng 1 (ô thứ 3)
+				else if (currentPos == 0) currentPos = 7;  // Chuyển từ đầu dòng 1 (ô thứ 0) sang cuối dòng 2 (ô thứ 7)
+				else currentPos--; // Di chuyển sang trái bình 
+				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+
+			}
+			else if (key == 's') {
+				playMoveSound();
+				// Di chuyển xuống
+				if (currentPos >= 0 && currentPos <= 3) currentPos += 4;
+				else if (currentPos >= 4 && currentPos <= 7) currentPos -= 4; // Chuyển xuống dòng 2
+				// Chuyển xuống dòng 
+				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+
+			}
+			else if (key == 'w') {
+				playMoveSound();
+				// Di chuyển lên
+				if (currentPos >= 4 && currentPos <= 7) currentPos -= 4;
+				else if (currentPos >= 0 && currentPos <= 3) currentPos += 4;// Chuyển lên dòng 1
+				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+
+			}
+			else if (key == 'd') {
+				playMoveSound();
+				clearSelectionBox(positions[currentPos][0], positions[currentPos][1]);
+
+				// Di chuyển sang phải
+				if (currentPos == 7) currentPos = 0;
+				else if (currentPos == 3) currentPos = 4;  // Chuyển từ cuối dòng 1 (ô thứ 3) sang đầu dòng 2 (ô thứ 4)
+				// Chuyển từ cuối dòng 2 (ô thứ 7) sang đầu dòng 1 (ô thứ 0)
+				else {
+					currentPos++;
+				} // Di chuyển sang phải bình thường
+				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+			}
+			else if (key == 13) {
+				playSelectSound();
+				if (!occupied[currentPos]) {
+					occupied[currentPos] = true;
+					GotoXY(positions[currentPos][0], positions[currentPos][1]);
+					drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+					cout << (playerturn == 1 ? "X" : "O");
+					if (playerturn == 1) {
+						Player_1.Character = labels[currentPos];
+					}
+					else if (playerturn == 2) {
+						Player_2.Character = labels[currentPos];
+					}
+					count++;
+					playerturn = (playerturn == 1) ? 2 : 1;
+					GotoXY(60, 2);
+					cout << "Chon thanh cong";
+
+				}
+		
+			}
+
+			drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
+			if (count == 2) {
+				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], 1);
+				Sleep(200);
+				s = false;
+				system("cls");
+			}
+		}
+
+	}
+
+}
+void DrawChooseAvatar(const Player& Player, int x, int y){
+	if (Player.Character == "Red") {
+		DrawRedBoom(x + 4, y + 5);
+	}
+	else if(Player.Character == "Green") {
+		DrawGreenBoom(x + 4, y + 5);
+	}
+	else if (Player.Character == "Yellow") {
+		DrawYellowBoom(x + 4, y + 5);
+	}
+	else if (Player.Character == "Black") {
+		DrawBlackBoom(x + 4, y + 5);
+	}
+	else if (Player.Character == "Blue") {
+		DrawBlueBoom(x + 4, y + 5);
+	}
+	else if (Player.Character == "Pig") {
+		DrawPig(x + 4, y + 5);
+	}
+	else if (Player.Character == "Dragon") {
+		DrawRedDragon(x + 4, y + 5);
+	}
+	else if (Player.Character == "Pikachu") {
+		DrawPikachu(x + 4, y + 5);
+	}
+}
+void vechuwin(int x, int y) {
+	vechuW(x, y);
+	vechuI(x + 15, y);
+	vechuN(x + 24, y);
+}
+void vechuW(int x, int y) {
 	// Khai báo mảng 12x14 với các giá trị đã cho
 	int matrix[12][14] = {
 		{0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0},
@@ -399,4 +889,262 @@ void DrawWIN(int x, int y) {
 		}cout << endl;
 	}
 	SetConsoleOutputCP(437);
+}
+void vechuI(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[12][7] = {
+		{0, 0, 0, 0, 0, 0, 0},
+		{0, 15, 15, 15, 15, 15, 0},
+		{0, 4, 15, 15, 15, 4, 0},
+		{0, 0, 12, 12, 12, 0, 0},
+		{15, 0, 12, 12, 12, 0, 15},
+		{15, 0, 12, 12, 12, 0, 15},
+		{15, 0, 12, 12, 12, 0, 15},
+		{0, 0, 12, 12, 12, 0, 0},
+		{0, 12, 12, 12, 12, 12, 0},
+		{0, 4, 4, 4, 4, 4, 0},
+		{0, 0, 0, 0, 0, 0, 0},
+		{15,15,15,15,15,15,15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 7; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void vechuN(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[12][10] = {
+		 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		 {0, 15, 15, 12, 0, 0, 12, 12, 12, 0},
+		 {0, 15, 15, 12, 0, 0, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 12, 0, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 12, 12, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 12, 12, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 4, 12, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 0, 4, 12, 12, 12, 0},
+		 {0, 12, 12, 12, 0, 0, 12, 12, 12, 0},
+		 {0, 4, 4, 4, 0, 0, 4, 4, 4, 0},
+		 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		 {15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 10; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void vechuX(int x, int y) {
+	// Khai báo ma trận 12x11
+	int matrix[12][11] = {
+		{0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0},
+		{0, 15, 15, 12, 0, 15, 0, 12, 12, 12, 0},
+		{0, 15, 15, 12, 0, 0, 0, 12, 12, 12, 0},
+		{0, 4, 12, 12, 12, 0, 12, 12, 12, 4, 0},
+		{0, 0, 4, 12, 12, 12, 12, 12, 4, 0, 0},
+		{15, 0, 0, 4, 12, 12, 12, 4, 0, 0, 15},
+		{0, 0, 12, 12, 12, 12, 12, 12, 12, 0, 0},
+		{0, 12, 12, 12, 12, 0, 12, 12, 12, 12, 0},
+		{0, 12, 12, 12, 0, 0, 0, 12, 12, 12, 0},
+		{0, 4, 4, 4, 0, 15, 0, 4, 4, 4, 0},
+		{0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0},
+		{15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 11; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void vechuO(int x, int y) {
+	// Khai báo ma trận 12x11
+	int matrix[12][9] = {
+	{15, 0, 0, 0, 0, 0, 0, 0, 15},
+	{0, 0, 15, 12, 12, 12, 12, 0, 0},
+	{0, 15, 15, 12, 12, 12, 12, 12, 0},
+	{0, 12, 12, 12, 4, 12, 12, 12, 0},
+	{0, 12, 12, 12, 0, 12, 12, 12, 0},
+	{0, 12, 12, 12, 0, 12, 12, 12, 0},
+	{0, 12, 12, 12, 0, 12, 12, 12, 0},
+	{0, 12, 12, 12, 12, 12, 12, 12, 0},
+	{0, 4, 12, 12, 12, 12, 12, 4, 0},
+	{0, 0, 4, 4, 4, 4, 4, 0, 0},
+	{15, 0, 0, 0, 0, 0, 0, 0, 15},
+	{15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 9; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void Xwin(int x, int y) {
+	vechuX(x, y);
+	vechuwin(x + 18, y);
+	SetColor(0, 15);  // Reset màu s?c v? m?c ??nh
+	SetConsoleOutputCP(437);
+}
+void Owin(int x, int y) {
+	vechuO(x, y);
+	vechuwin(x + 18, y);
+	SetColor(0, 15);  // Reset màu s?c v? m?c ??nh
+	SetConsoleOutputCP(437);
+}
+void bangtrang(int x, int y) {
+	int matrix[14][60];
+	for (int i = 0; i < 14; ++i) {
+		for (int j = 0; j < 55; ++j) {
+			matrix[i][j] = 15;
+		}
+	}
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 14; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 55; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+
+void nhapnhayO(int x, int y) {
+	/*while (true) {
+
+	}*/
+	for (int i = 1; i < 11; i++) {
+		Owin(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		bangtrang(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		//this_thread::sleep_for(chrono::milliseconds(500));
+		Owin(x, y);
+	}
+}
+void nhapnhayX(int x, int y) {
+	/*while (true) {
+
+	}*/
+	for (int i = 1; i < 11; i++) {
+		Xwin(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		bangtrang(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		//this_thread::sleep_for(chrono::milliseconds(500));
+		Xwin(x, y);
+	}
+}
+void nhapnhayDRAW(int x, int y) {
+	for (int i = 1; i < 11; i++) {
+		DrawDRAW(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		bangtrang(x, y);
+		this_thread::sleep_for(chrono::milliseconds(300));
+		//this_thread::sleep_for(chrono::milliseconds(500));
+		DrawDRAW(x, y);
+	}
+}
+void DrawBackground()
+{
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                                                                                      \033[m";
+	cout << "\033[48;5;117m                                                                              \033[48;5;255m  \033[48;5;153m  \033[48;5;117m    \033[48;5;153m  \033[48;5;255m    \033[48;5;153m  \033[48;5;117m                                        \033[m";
+	cout << "\033[48;5;117m                                                            \033[48;5;195m  \033[48;5;189m    \033[48;5;117m  \033[48;5;153m  \033[48;5;117m    \033[48;5;189m  \033[48;5;254m    \033[48;5;189m  \033[48;5;117m    \033[48;5;255m          \033[48;5;153m  \033[48;5;117m        \033[48;5;195m  \033[48;5;189m  \033[48;5;117m                        \033[m";
+	cout << "\033[48;5;117m            \033[48;5;255m  \033[48;5;189m  \033[48;5;117m                                      \033[48;5;189m      \033[48;5;255m  \033[48;5;254m      \033[48;5;255m  \033[48;5;153m  \033[48;5;117m  \033[48;5;153m  \033[48;5;189m    \033[48;5;153m  \033[48;5;116m  \033[48;5;254m  \033[48;5;255m  \033[48;5;15m  \033[48;5;255m  \033[48;5;254m    \033[48;5;189m  \033[48;5;117m    \033[48;5;153m  \033[48;5;255m      \033[48;5;195m  \033[48;5;117m                      \033[m";
+	cout << "\033[48;5;117m        \033[48;5;153m  \033[48;5;255m    \033[48;5;189m  \033[48;5;153m  \033[48;5;117m                                      \033[48;5;153m  \033[48;5;189m  \033[48;5;254m    \033[48;5;255m  \033[48;5;254m    \033[48;5;153m        \033[48;5;255m    \033[48;5;153m                \033[48;5;117m  \033[48;5;153m  \033[48;5;189m  \033[48;5;255m  \033[48;5;189m  \033[48;5;153m  \033[48;5;117m    \033[48;5;153m      \033[48;5;117m              \033[m";
+	cout << "\033[48;5;117m        \033[48;5;153m      \033[48;5;189m      \033[48;5;153m  \033[48;5;117m                        \033[48;5;153m  \033[48;5;117m        \033[48;5;153m    \033[48;5;189m  \033[48;5;153m  \033[48;5;189m      \033[48;5;153m  \033[48;5;189m    \033[48;5;254m    \033[48;5;255m  \033[48;5;153m  \033[48;5;117m  \033[48;5;153m  \033[48;5;189m  \033[48;5;117m      \033[48;5;153m  \033[48;5;189m  \033[48;5;254m    \033[48;5;255m  \033[48;5;153m        \033[48;5;255m  \033[48;5;254m    \033[48;5;153m  \033[48;5;117m            \033[m";
+	cout << "\033[48;5;153m                                            \033[48;5;254m  \033[48;5;189m  \033[48;5;153m                            \033[48;5;189m  \033[48;5;153m                  \033[48;5;255m  \033[48;5;254m  \033[48;5;189m  \033[48;5;153m      \033[48;5;255m  \033[48;5;189m          \033[48;5;153m    \033[48;5;189m  \033[48;5;153m        \033[m";
+	cout << "\033[48;5;153m                                                                  \033[48;5;189m  \033[48;5;153m                                                                  \033[m";
+	cout << "\033[48;5;153m                                                                                                                                      \033[m";
+	cout << "\033[48;5;153m                                                                                                                                      \033[m";
+	cout << "\033[48;5;153m                                                                                    \033[48;5;254m  \033[48;5;153m                                                \033[m";
+	cout << "\033[48;5;69m                                                                        \033[48;5;111m    \033[48;5;153m      \033[48;5;152m        \033[48;5;153m  \033[48;5;111m      \033[48;5;69m      \033[48;5;75m  \033[48;5;69m                            \033[m";
+	cout << "\033[48;5;69m          \033[48;5;68m  \033[48;5;69m                \033[48;5;68m  \033[48;5;69m              \033[48;5;68m    \033[48;5;69m                    \033[48;5;68m    \033[48;5;69m      \033[48;5;111m        \033[48;5;110m    \033[48;5;111m  \033[48;5;69m          \033[48;5;68m    \033[48;5;69m            \033[48;5;68m  \033[48;5;69m        \033[48;5;68m  \033[48;5;69m    \033[m";
+	cout << "\033[48;5;115m  \033[48;5;109m  \033[48;5;247m  \033[48;5;115m    \033[48;5;107m  \033[48;5;115m  \033[48;5;247m  \033[48;5;109m  \033[48;5;115m  \033[48;5;109m  \033[48;5;247m  \033[48;5;109m  \033[48;5;247m  \033[48;5;108m  \033[48;5;247m  \033[48;5;115m  \033[48;5;247m  \033[48;5;115m  \033[48;5;247m  \033[48;5;109m  \033[48;5;247m  \033[48;5;108m    \033[48;5;109m  \033[48;5;247m  \033[48;5;115m      \033[48;5;247m  \033[48;5;115m    \033[48;5;109m  \033[48;5;115m  \033[48;5;108m    \033[48;5;115m  \033[48;5;109m  \033[48;5;115m        \033[48;5;247m  \033[48;5;108m    \033[48;5;115m      \033[48;5;109m    \033[48;5;108m      \033[48;5;247m  \033[48;5;115m      \033[48;5;108m  \033[48;5;115m  \033[48;5;108m    \033[48;5;247m    \033[48;5;115m  \033[48;5;108m  \033[48;5;115m  \033[48;5;247m  \033[m";
+	cout << "\033[48;5;150m  \033[48;5;107m  \033[48;5;149m  \033[48;5;150m  \033[48;5;149m    \033[48;5;113m  \033[48;5;107m  \033[48;5;114m  \033[48;5;113m  \033[48;5;107m  \033[48;5;150m  \033[48;5;113m  \033[48;5;150m    \033[48;5;113m  \033[48;5;107m    \033[48;5;150m  \033[48;5;108m  \033[48;5;113m  \033[48;5;107m  \033[48;5;113m  \033[48;5;149m  \033[48;5;107m    \033[48;5;114m  \033[48;5;107m    \033[48;5;113m    \033[48;5;107m  \033[48;5;149m  \033[48;5;107m  \033[48;5;150m    \033[48;5;107m    \033[48;5;149m  \033[48;5;150m  \033[48;5;107m  \033[48;5;113m  \033[48;5;107m  \033[48;5;113m  \033[48;5;149m  \033[48;5;107m    \033[48;5;150m  \033[48;5;114m  \033[48;5;107m  \033[48;5;150m    \033[48;5;149m  \033[48;5;113m  \033[48;5;107m    \033[48;5;113m  \033[48;5;107m  \033[48;5;150m    \033[48;5;113m  \033[48;5;107m      \033[48;5;113m  \033[48;5;149m  \033[48;5;107m  \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+	cout << "\033[48;5;107m                                                                                                                                      \033[m";
+
+}
+
+void DrawLoaded(_POINT _A[][BOARD_SIZE])
+{
+	system("Color F0");
+	FixConsoleWindow();
+	DrawBound();
+	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
+	DrawGuideGame(3, 35);
+	Draw_infor1(70, 3, 28, 13);
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].c == -1) {
+				SetColor(4, 15);
+				GotoXY(_A[i][j].x, _A[i][j].y);
+				cout << "X";
+			}
+			else if (_A[i][j].c == 1) {
+				SetColor(1, 15);
+				GotoXY(_A[i][j].x, _A[i][j].y);
+				cout << "O";
+			}
+		}
+	}
 }

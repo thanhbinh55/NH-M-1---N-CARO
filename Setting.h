@@ -6,3 +6,4 @@
 
 void boxSetting(int x, int y, int w, int h, int currentOption, bool& backgroundSound, bool& soundEffect);
 void Setting();
+void selectLanguage();

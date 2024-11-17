@@ -1,11 +1,13 @@
 ﻿#include "Game.h"
 #include "Menu.h"
 #include "Help.h"
+#include "About.h"
 #include "Setting.h"
 #include "SaveLoad.h"
 #include "LanguageText.h"
 #include "Draw.h"
 #include "Bot.h"
+#include <atomic>
 _POINT _A[BOARD_SIZE][BOARD_SIZE];
 bool _TURN;
 int _COMMAND;
@@ -14,7 +16,7 @@ Player Player_1, Player_2;
 //bool isSoundEffectEnabled = true;
 Language currentLanguage;
 int positions[5][2];
-
+atomic<bool> keep;
 //// Hàm nhóm View
 void ShowCur(bool CursorVisibility) {
 	CONSOLE_CURSOR_INFO cursorInfo;
@@ -263,7 +265,7 @@ void InputPvP(int x, int y, int w, int h) {
 	//SetColor(0, 15);
 	Box(x, y, w, h);
 	system("Color F0");
-	Draw_Guide(50, 35, "Nhap ky tu tu ban phim,   Enter: Get Name");
+	Draw_Guide(50, 35, text.inputText + ", " + text.selectText);
 	DrawBound();
 	DrawLogoCaro(45, 5);
 
@@ -292,39 +294,57 @@ void InputPvP(int x, int y, int w, int h) {
 			Player_1.Name += c;
 		}
 	}
-	Player_2.Name = "";
 
-	// Nhập tên cho Player 2
-	GotoXY(x + 1, y + 4);
-	SetColor(1, 15);
-	cout << text.nameText2;
+	Player_2.Name = "";
 	while (true) {
-		c = _getch();
-		if (c == 13) {
-			playSelectSound();
-			break; // Nhấn Enter để kết thúc nhập tên
+		GotoXY(x + 1, y + 4);
+		SetColor(1, 15);
+		cout << text.nameText2;
+
+		while (true) {
+			c = _getch();
+			if (c == 13) {
+				playSelectSound();
+				break; // Press Enter to finish entering the name
+			}
+			if (c == 8 && !Player_2.Name.empty()) { // Check for empty string with Backspace
+				Player_2.Name.pop_back();
+				GotoXY(x + 19, y + 4);
+				cout << Player_2.Name << " ";
+				GotoXY(x + 19 + Player_2.Name.length(), y + 4);
+			}
+			else if ((isalpha(c) || c == ' ') && Player_2.Name.length() <= 10) { // Only accept letters or spaces and limit to 10 characters
+				c = toupper(c);
+				cout << c;
+				Player_2.Name += c;
+			}
 		}
-		if (c == 8 && !Player_2.Name.empty()) { // Kiểm tra chuỗi trống khi dùng Backspace
-			Player_2.Name.pop_back();
+
+		// Check if Player 2's name is the same as Player 1's name
+		if (Player_2.Name == Player_1.Name) {
+			GotoXY(x + 1, y + 5); // Display error message
+			SetColor(12, 15); // Red text color for error
+			cout << "Error: Name must be different from Player 1, again!";
+
+			// Clear the previous duplicate name
+			Player_2.Name = ""; // Reset Player 2's name
 			GotoXY(x + 19, y + 4);
-			cout << Player_2.Name << " ";
-			GotoXY(x + 19 + Player_2.Name.length(), y + 4);
+			cout << "          "; // Overwrite old name with spaces
+			GotoXY(x + 19, y + 4); // Move cursor back to the starting position for Player 2's name
 		}
-		else if ((isalpha(c) || c == ' ') && Player_2.Name.length() <= 10) { // Chỉ nhận chữ cái hoặc dấu cách và giới hạn 10 ký tự
-			c = toupper(c);
-			cout << c;
-			Player_2.Name += c;
+		else {
+			break; // Exit loop if names are different
 		}
 	}
 	SetColor(15, 0);
+	ChooseAvatar();
 }
 void InputPvC(int x, int y, int w, int h) {
-	//SetColor(0, 15);
 	Box(x, y, w, h);
 	system("Color F0");
-	Draw_Guide(56, 35, "Nhap ky tu tu ban phim,   Enter: Get Name");
+	Draw_Guide(50, 35, text.inputText + ", " + text.selectText);
 	DrawBound();
-	LogoCaro(52, 5);
+	DrawLogoCaro(45, 5);
 
 	SetColor(4, 15);
 	GotoXY(x + 1, y + 1);
@@ -351,17 +371,15 @@ void InputPvC(int x, int y, int w, int h) {
 			Player_1.Name += c;
 		}
 	}
-
 	Player_2.Name = "Bot"; // Đặt tên cho Player 2 là Bot
 
 	// In tên cho Player 2
 	GotoXY(x + 1, y + 4);
 	SetColor(1, 15);
 	cout << "Player 2 (O): " << Player_2.Name << " (Bot)";
-
 	SetColor(15, 0);
+	ChooseAvatar();
 }
-
 
 void GamePlayPvP() {
 	bool validEnter = true;
@@ -395,42 +413,45 @@ void GamePlayPvP() {
 		}
 		else if (_COMMAND == 13) {  // Phím Enter để đánh dấu nước đi
 			playSelectSound();
-
 			// Kiểm tra ô có hợp lệ hay không
 			switch (CheckBoard(_X, _Y)) {
 			case -1:  // Người chơi 1 đánh
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				Draw_infor2(105, 3, 28, 10, Player_2);
-				Draw_infor(70, 3, 28, 10, Player_1);
+				//Draw_infor2(105, 3, 28, 13, Player_2);
+				Draw_infor(70, 3, 28, 13);
 				break;
 			case 1:   // Người chơi 2 đánh
 				SetColor(1, 15);
 				printf("O");
 				Player_2.Moves++;
-				Draw_infor2(70, 3, 28, 10, Player_1);
-				Draw_infor(105, 3, 28, 10, Player_2);
+				//Draw_infor2(70, 3, 28, 13, Player_1);
+				//Draw_infor(105, 3, 28, 13, Player_2);
+				Draw_infor(70, 3, 28, 13);
 				break;
 			case 0:   // Ô đã được đánh dấu
 				validEnter = false;
 				break;
 			}
-
 			// Nếu ô hợp lệ, kiểm tra kết quả game
 			if (validEnter) {
 				switch (ProcessFinish(TestBoard())) {
 				case -1:
 				// Người chơi 1 thắng
 				case 1: 
-
 				 // Người chơi 2 thắng
 				case 0:   // Hòa
 					if (AskContinue() != 'Y') {
-						system("cls");  // Xóa màn hình
-						MainMenu();
-						//MenuReturn();   // Quay lại menu chính
-						return;
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();							
+						}
 					}
 					else {
 						StartGame();    // Bắt đầu trò chơi mới
@@ -447,14 +468,17 @@ void GamePlayPvP() {
 				return;
 			}
 			else {
-				break;
+				system("cls");					
+				DrawLoaded(_A);
+				SubMenu();
+				DrawLoaded(_A);
 			}
-			
 		}
 	}
 }
+
 void GamePlayPvC() {
-	int count = -1;
+	//int count = -1;
 	bool validEnter = true;
 
 	while (true) {
@@ -491,7 +515,8 @@ void GamePlayPvC() {
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				Draw_infor(70, 3, 28, 10, Player_1);
+				//Draw_infor2(105, 3, 28, 13, Player_2);
+				Draw_infor(70, 3, 28, 13);
 				break;
 			case 0:
 				validEnter = false;
@@ -504,11 +529,18 @@ void GamePlayPvC() {
 				case 1:   // Hòa
 				case 0:   // Tiếp tục
 					if (AskContinue() != 'Y') {
-						system("cls");
-						MainMenu();
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
 					}
 					else {
-						StartGame();
+						StartGame();    // Bắt đầu trò chơi mới
 						break;
 					}
 				}
@@ -520,31 +552,48 @@ void GamePlayPvC() {
 				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
 				printf("O");
 				Player_2.Moves++;
-				Draw_infor(105, 3, 28, 10, Player_2);
+				//Draw_infor2(70, 3, 28, 13, Player_1);
+				//Draw_infor(105, 3, 28, 13, Player_2);
+				Draw_infor(70, 3, 28, 13);
 
-				Sleep(600);
+				Sleep(300);
 
 				switch (ProcessFinish(TestBoard())) {
 				case -1:
 				case 1:
 				case 0:
 					if (AskContinue() != 'Y') {
-						system("cls");
-						MainMenu();
-						//MenuReturn();
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
 					}
 					else {
-						StartGame();
+						StartGame();    // Bắt đầu trò chơi mới
 						break;
 					}
 				}
 			}
 			validEnter = true;
 		}
-		else if (_COMMAND == 'L') {  // Lưu và quay lại MenuReturn
-			SaveGame();
-			MainMenu();
-			//MenuReturn();
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				DrawLoaded(_A);
+			}
+
 		}
 	}
 }
@@ -595,10 +644,11 @@ void StartGame() {
 	ResetGame(); // Khoi tao lai ban co, toa do, khong xoa win, move
 	//ResetData(); // Khởi tạo dữ liệu gốc win, move =0;
 	ShowCur(true);
+	keep = false;
 	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
 	DrawGuideGame(3, 35);
-	Draw_infor(70, 3, 28, 10, Player_1);
-	Draw_infor(105, 3, 28, 10, Player_2);
+	Draw_infor1(70, 3, 28, 13);
+	
 	GotoXY(_X, _Y);
 }
 void MoveRight() {
@@ -629,29 +679,66 @@ void MoveUp() {
 }
 // Hàm hỏi người chơi có tiếp tục hay không
 int AskContinue() {
-	Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 15, 63, 4);
-	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 13); // Nhảy đến vị trí để hỏi người chơi
+	//Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 63, 4);
+	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
 	cout<<text.askContinueText;
 	return toupper(_getch()); // Đọc ký tự và trả về dạng chữ hoa
 
 }
 int AskSaveGame()
 {
-	Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 15, 63, 4);
-	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 13); // Nhảy đến vị trí để hỏi người chơi
+	SetColor(0, 15);
+	//Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 63, 4);
+	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
 	cout<<text.askSaveGameText;
 	return toupper(_getch());
-	//char _COMMAND = toupper(_getch()); // Đọc ký tự và trả về dạng chữ hoa
-	//if (_COMMAND == 'Y')
-	//{
-	//	SaveGame();
-	//	return;
-	//}
-	//else
-	//{
-	//	return;
-	//}
 
+}
+void BlinkConsoleCharacters() {
+	CHAR_INFO charInfo;
+	COORD bufferSize = { 1, 1 };
+	COORD bufferCoord = { 0, 0 };
+	SMALL_RECT readRegion;
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	// Kiểm tra nếu không thể lấy handle console
+	if (hConsole == INVALID_HANDLE_VALUE) {
+		std::cerr << "Failed to get console handle.\n";
+		return;
+	}
+	static bool isGreen = true;  // Khai báo biến tĩnh isGreen
+	while (keep) { // Lặp vô hạn để nhấp nháy
+		for (int i = 0; i < 5; i++) {
+			// Lấy tọa độ x và y từ positions
+			int x = _A[positions[i][0]][positions[i][1]].x;
+			int y = _A[positions[i][0]][positions[i][1]].y;
+			// Xác định vùng đọc chỉ với một ô tại tọa độ (x, y)
+			readRegion = { SHORT(x), SHORT(y), SHORT(x), SHORT(y) };
+			// Đọc ký tự và thuộc tính gốc tại vị trí
+			if (!ReadConsoleOutput(hConsole, &charInfo, bufferSize, bufferCoord, &readRegion)) {
+				std::cerr << "Failed to read console output.\n";
+				return;
+			}
+			// Thay đổi màu sắc nhấp nháy
+			if (isGreen) {
+				// Đổi màu chữ thành xanh lá cây
+				charInfo.Attributes = (charInfo.Attributes & 0xF0) | FOREGROUND_GREEN;
+			}
+			else {
+				// Đổi màu chữ thành màu mặc định 
+				charInfo.Attributes = (charInfo.Attributes & 0xF0) |
+					(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+			}
+			// Ghi lại ký tự với màu mới
+			if (!WriteConsoleOutput(hConsole, &charInfo, bufferSize, bufferCoord, &readRegion)) {
+				std::cerr << "Failed to write console output.\n";
+				return;
+			}
+		}
+		// Đổi trạng thái màu cho lần nhấp nháy tiếp theo
+		isGreen = !isGreen;
+		// Dừng một khoảng thời gian trước khi lặp lại
+		Sleep(200); // Dừng 200ms
+	}
 }
 int ProcessFinish(int pWhoWin) {
 	GotoXY(85 + 2, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 8); // Nhảy tới vị trí thích hợp để in chuỗi thắng/thua/hòa
@@ -659,26 +746,36 @@ int ProcessFinish(int pWhoWin) {
 	switch (pWhoWin) {
 
 	case -1:
-		SetConsoleBackgroundColor();
-		DrawWIN(80, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 8);
-	//	DrawDRAW(76, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 8);
+	{
+		keep = true;
+		thread nhapnhay(BlinkConsoleCharacters);
+		nhapnhay.detach();
+	}
+		playWINGameMusic();
+		//SetConsoleBackgroundColor();
 		SetColor(0, 15);
-		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 10, 63, 10);
-		GotoXY(85 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 5);
-		//cout << "Player_1: " << Player_1.Name << " THANG" << " Player_2: " << Player_2.Name << endl;
+		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
+		nhapnhayX(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);
+		keep = false;
 		break;
 	case 1:
-		SetConsoleBackgroundColor();
+	{
+		keep = true;
+		thread nhapnhay(BlinkConsoleCharacters);
+		nhapnhay.detach();
+	}
+		playWINGameMusic();
+		//SetConsoleBackgroundColor();
 		SetColor(0, 15);
-		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 10, 63, 10);
-		GotoXY(85 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 5);
-		cout << "Player_2: " << Player_2.Name << " THANG" << " Player_1: " << Player_1.Name << endl;
+		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
+		nhapnhayO(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);
+		keep = false;
 		break;
 	case 0:
-		DrawDRAW(76, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 8);
-		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 10, 63, 10);
-		GotoXY(85 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 5);
-		//cout << "Player_1: " << Player_1.Name << " HOA" << " Player_2: " << Player_2.Name << endl;
+		playDRAWGameMusic();
+		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
+		nhapnhayDRAW(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 7);
+		SetColor(0, 15);
 		break;
 	case 2:
 		_TURN = !_TURN; // Đổi lượt nếu không có gì xảy ra

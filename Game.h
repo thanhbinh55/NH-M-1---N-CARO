@@ -33,6 +33,7 @@ struct Player {
     string Name;
     int Moves; // Số bước di chuyển
     int Wins ;  // Số lượt thắng
+    string Character;
 };
 // Biến người chơi toàn cục
 extern Player Player_1, Player_2;

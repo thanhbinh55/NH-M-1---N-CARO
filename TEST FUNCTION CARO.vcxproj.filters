@@ -48,6 +48,9 @@
     <ClCompile Include="Bot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="About.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Menu.h">
@@ -80,10 +83,36 @@
     <ClInclude Include="Bot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="About.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Gamelist.txt">
       <Filter>Source Files</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="8-bit-game-2-186976.mp3" />
+    <Media Include="8-bit-game-2-186976.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="8bit-music-for-game-68698.mp3" />
+    <Media Include="8bit-music-for-game-68698.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="Draw.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="MenuMove.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="MenuSelect.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="Win.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="GameBGM.mp3" />
   </ItemGroup>
 </Project>

@@ -11,11 +11,11 @@ void boxSetting(int x, int y, int w, int h, int currentOption, bool& backgroundS
     std::cout << text.backgroundSoundText << ": "; // Sử dụng biến từ LanguageText
     if (currentOption == 0) {
         SetColor(15, 0);
-        std::cout << (isBackgroundMusicOpen ? "On     " : "Off");
+        std::cout << (isBackgroundMusicOpen ? text.onText : text.offText);
         SetColor(0, 15);
     }
     else {
-        std::cout << (isBackgroundMusicOpen ? "On        " : "Off     ");
+        std::cout << (isBackgroundMusicOpen ? text.onText : text.offText);
     }
 
     // Hiển thị trạng thái hiệu ứng âm thanh
@@ -23,11 +23,11 @@ void boxSetting(int x, int y, int w, int h, int currentOption, bool& backgroundS
     std::cout << text.soundEffectText << ": "; // Sử dụng biến từ LanguageText
     if (currentOption == 1) {
         SetColor(15, 0);
-        std::cout << (isSoundEffectEnabled ? "On     " : "Off     ");
+        std::cout << (isSoundEffectEnabled ? text.onText : text.offText);
         SetColor(0, 15);
     }
     else {
-        std::cout << (isSoundEffectEnabled ? "On     " : "Off     ");
+        std::cout << (isSoundEffectEnabled ? text.onText: text.offText);
     }
 
     // Hiển thị lựa chọn ngôn ngữ
@@ -42,9 +42,34 @@ void boxSetting(int x, int y, int w, int h, int currentOption, bool& backgroundS
     else
     {
         SetColor(0, 15);
-        std::cout << ((currentLanguage == ENGLISH) ? "English" : "Vietnamese ");
+        std::cout << ((currentLanguage == ENGLISH) ? "English    " : "Vietnamese ");
     }
 
+}
+
+void selectLanguage() {
+    FixConsoleWindow();
+    DrawBackground();
+    SetColor(0, 15);
+    DrawBound();
+   // system("Color F0");
+    char choice;
+    GotoXY(42, 15);
+    std::cout << "Select Language / Chon Ngon Ngu: (E) English / (V) Tieng Viet: ";
+    std::cin >> choice;
+
+    if (choice == 'E' || choice == 'e') {
+        currentLanguage = VIETNAMESE;
+    }
+    else if (choice == 'V' || choice == 'v') {
+        currentLanguage = ENGLISH;
+    }
+    else {
+        std::cout << "Invalid choice. Defaulting to English.\n";
+        currentLanguage = VIETNAMESE;
+    }
+    ToggleLanguage();
+    system("cls");
 }
 
 void Setting() {
@@ -83,7 +108,7 @@ void Setting() {
         }
         else if (_COMMAND == 'B') { // ESC để thoát
             system("cls");
-            break;
+            return;
         }
     }
 }

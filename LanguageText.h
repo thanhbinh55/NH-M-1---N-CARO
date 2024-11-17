@@ -8,6 +8,7 @@ struct LanguageText {
 	string loadGameText;
 	string settingText;
 	string helpText;
+	string aboutText;
 	string exit;
 	string save;
 	string exitText;
@@ -22,7 +23,6 @@ struct LanguageText {
 	string backgroundSoundText;
 	string soundEffectText;
 	string languageText;
-	string aboutText;
 	string askContinueText;    // Corrected to match cpp
 	string askSaveGameText;    // Corrected to match cpp
 	string moveLeftText;
@@ -31,6 +31,18 @@ struct LanguageText {
 	string moveDownText;
 	string selectText;
 	string goBackText;
+
+	string menuGuideText;
+	string menuInstructions1;
+	string menuInstructions2;
+	string menuInstructions3;
+	string gameGuideText;
+	string gameInstructions1;
+	string gameInstructions2;
+	string gameInstructions3;
+
+	string choseGamePlay;
+
 };
 
 // Declare these as extern to avoid multiple definitions
