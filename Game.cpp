@@ -13,7 +13,6 @@ bool _TURN;
 int _COMMAND;
 int _X, _Y;
 Player Player_1, Player_2;
-//bool isSoundEffectEnabled = true;
 Language currentLanguage;
 int positions[5][2];
 atomic<bool> keep;
@@ -40,7 +39,6 @@ void TextHighlight(int x, int y, int w, int h, int b_color_sang, string nd) {
 			cout << " "; // Tô đầy
 		}
 	}
-	// SetTextColor(252); // Màu chữ trắng --> bỏ dòng này thì chữ sẽ trở về màu cũ sau khi hết chọn 
 	GotoXY(x + (w - nd.length()) / 2, y + h / 2); // Căn giữa nội dung
 	cout << nd;
 }
@@ -134,8 +132,6 @@ void ResetData() {
 }
 void ExitGame() {
 	system("cls");
-	//GabageCollect();
-	//Có thể lưu game trước khi exit
 }
 //hàm đánh dấu vào ma trận bàn cờ khi người chơi nhấn phím ‘enter
 //--> kiểm tra vị trí đánh _X, _y là của 1 hay 0
@@ -262,7 +258,6 @@ bool isDraw() {
 }
 
 void InputPvP(int x, int y, int w, int h) {
-	//SetColor(0, 15);
 	Box(x, y, w, h);
 	system("Color F0");
 	Draw_Guide(50, 35, text.inputText + ", " + text.selectText);
@@ -419,15 +414,12 @@ void GamePlayPvP() {
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				//Draw_infor2(105, 3, 28, 13, Player_2);
 				Draw_infor(70, 3, 28, 13);
 				break;
 			case 1:   // Người chơi 2 đánh
 				SetColor(1, 15);
 				printf("O");
 				Player_2.Moves++;
-				//Draw_infor2(70, 3, 28, 13, Player_1);
-				//Draw_infor(105, 3, 28, 13, Player_2);
 				Draw_infor(70, 3, 28, 13);
 				break;
 			case 0:   // Ô đã được đánh dấu
@@ -515,7 +507,6 @@ void GamePlayPvC() {
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				//Draw_infor2(105, 3, 28, 13, Player_2);
 				Draw_infor(70, 3, 28, 13);
 				break;
 			case 0:
@@ -552,8 +543,6 @@ void GamePlayPvC() {
 				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
 				printf("O");
 				Player_2.Moves++;
-				//Draw_infor2(70, 3, 28, 13, Player_1);
-				//Draw_infor(105, 3, 28, 13, Player_2);
 				Draw_infor(70, 3, 28, 13);
 
 				Sleep(300);
@@ -642,7 +631,6 @@ void StartGame() {
 	system("cls");
 	DrawBound();
 	ResetGame(); // Khoi tao lai ban co, toa do, khong xoa win, move
-	//ResetData(); // Khởi tạo dữ liệu gốc win, move =0;
 	ShowCur(true);
 	keep = false;
 	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
@@ -679,7 +667,6 @@ void MoveUp() {
 }
 // Hàm hỏi người chơi có tiếp tục hay không
 int AskContinue() {
-	//Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 63, 4);
 	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
 	cout<<text.askContinueText;
 	return toupper(_getch()); // Đọc ký tự và trả về dạng chữ hoa
@@ -688,7 +675,6 @@ int AskContinue() {
 int AskSaveGame()
 {
 	SetColor(0, 15);
-	//Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2, 63, 4);
 	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
 	cout<<text.askSaveGameText;
 	return toupper(_getch());
@@ -752,7 +738,6 @@ int ProcessFinish(int pWhoWin) {
 		nhapnhay.detach();
 	}
 		playWINGameMusic();
-		//SetConsoleBackgroundColor();
 		SetColor(0, 15);
 		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
 		nhapnhayX(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);
@@ -765,7 +750,6 @@ int ProcessFinish(int pWhoWin) {
 		nhapnhay.detach();
 	}
 		playWINGameMusic();
-		//SetConsoleBackgroundColor();
 		SetColor(0, 15);
 		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
 		nhapnhayO(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);

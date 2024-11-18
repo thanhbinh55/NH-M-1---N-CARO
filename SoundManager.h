@@ -5,7 +5,7 @@
 #include <mmsystem.h>
 #include <string>
 #include <iostream>
-#pragma comment(lib, "winmm.lib") // Liên kết thư viện winmm.lib
+#pragma comment(lib, "winmm.lib") 
 
 extern bool isBackgroundMusicOpen;
 extern bool isSoundEffectEnabled;
@@ -21,4 +21,4 @@ void playSelectSound();
 // Hàm khởi tạo âm thanh lần đầu
 void InitializeAudioSettings();
 
-#endif // AUDIO_SETTINGS_H
+#endif 

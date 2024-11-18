@@ -181,9 +181,6 @@ void SubMenu() {
                 system("cls");
                 ChooseGamePlay();
                 break;
-              //  DrawLoaded(_A);
-               // SubMenu();
-               // DrawLoaded(_A);
             }
           
         case 1:
@@ -195,13 +192,12 @@ void SubMenu() {
             system("cls");
             Setting();
             Draw_Guide(52, 35, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText + ", " + text.goBackText);
-           // SubMenu();
             DrawLoaded(_A);
             
             break;
         case 3:
             system("cls");
-            Help(5, 10, 80, 20);
+            Help(30, 10, 80, 20);
             Draw_Guide(52, 35, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText + ", " + text.goBackText);
             DrawLoaded(_A);
             break;

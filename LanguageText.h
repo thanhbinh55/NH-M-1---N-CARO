@@ -12,19 +12,19 @@ struct LanguageText {
 	string exit;
 	string save;
 	string exitText;
-	string saveText;          // Corrected to match cpp
-	string inputText;          // Corrected to match cpp
+	string saveText;         
+	string inputText;          
 	string nameText1;
 	string nameText2;
 	string movesText;
 	string winsText;
 	string onText;
-	string offText;            // Corrected to match cpp
+	string offText;            
 	string backgroundSoundText;
 	string soundEffectText;
 	string languageText;
-	string askContinueText;    // Corrected to match cpp
-	string askSaveGameText;    // Corrected to match cpp
+	string askContinueText;    
+	string askSaveGameText;    
 	string moveLeftText;
 	string moveRightText;
 	string moveUpText;
@@ -45,10 +45,10 @@ struct LanguageText {
 
 };
 
-// Declare these as extern to avoid multiple definitions
-extern LanguageText text;            // Global variable to store the current language text
-extern Language currentLanguage;     // Language setting (ENGLISH or VIETNAMESE)
 
-// Function to initialize text based on the current language
+extern LanguageText text;          
+extern Language currentLanguage;    
+
+
 void InitializeText();
 void ToggleLanguage();

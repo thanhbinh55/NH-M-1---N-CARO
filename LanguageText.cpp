@@ -1,8 +1,6 @@
 ﻿#include "LanguageText.h"
 
-// Define global variables here (only in the .cpp file)
 LanguageText text;
-//Language currentLanguage = ENGLISH;
 
 void InitializeText() {
     if (currentLanguage == ENGLISH) {
@@ -92,8 +90,7 @@ void InitializeText() {
     }
 }
 void ToggleLanguage() {
-    // Switch between ENGLISH and VIETNAMESE
     currentLanguage = (currentLanguage == ENGLISH) ? VIETNAMESE : ENGLISH;
-    InitializeText(); // Update text strings based on the selected language
+    InitializeText();
 }
 

@@ -1,5 +1,4 @@
 ﻿#pragma once
-//#include "Game.h"
 #include "SoundManager.h"
 
 // Cờ kiểm tra trạng thái nhạc nền và âm thanh hiệu ứng

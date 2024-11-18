@@ -21,7 +21,7 @@ void About(int x, int y, int w, int h)
 	GotoXY(x + 25, y + 13);
 	cout << "Instructor: Truong Toan Thinh";
 	GotoXY(x + 10, y + 16);
-	cout << "Source code: https://github.com/thanhbinh55/CSLT---N---CARO.git";
+	cout << "Source code: https://github.com/thanhbinh55/NHOM1-CARO.git";
 
 	while (1) {
 		_COMMAND = toupper(_getch());

@@ -52,7 +52,6 @@ void selectLanguage() {
     DrawBackground();
     SetColor(0, 15);
     DrawBound();
-   // system("Color F0");
     char choice;
     GotoXY(42, 15);
     std::cout << "Select Language / Chon Ngon Ngu: (E) English / (V) Tieng Viet: ";
