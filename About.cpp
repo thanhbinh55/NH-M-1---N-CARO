@@ -11,9 +11,9 @@ void About(int x, int y, int w, int h)
 	GotoXY(x + 36, y + 2);
 	cout << "Group: 1" << endl;
 	GotoXY(x + 25, y + 4);
-	cout << "24120261: Ngo Viet Thanh Binh";
+	cout << "24120269: Ngo Viet Thanh Binh";
 	GotoXY(x + 25, y + 6);
-	cout << "24120269: Dang Bui The Bao";
+	cout << "24120261: Dang Bui The Bao";
 	GotoXY(x + 25, y + 8);
 	cout << "24120293: Duong Nhut Duy";
 	GotoXY(x + 25, y + 10);
