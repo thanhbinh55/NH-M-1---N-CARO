@@ -6,12 +6,11 @@
 #include <string>
 #include <iostream>
 #pragma comment(lib, "winmm.lib") 
-
 extern bool isBackgroundMusicOpen;
 extern bool isSoundEffectEnabled;
 extern bool firstTime;
-
-void playBackgroundMusic(bool play);
+extern int a1;//bien am luong
+void playBackgroundMusic(bool play, int volume);
 void playGameMusic(bool play);
 void playDRAWGameMusic();
 void playWINGameMusic();

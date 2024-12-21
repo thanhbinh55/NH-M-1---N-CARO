@@ -3,6 +3,7 @@
 void About(int x, int y, int w, int h)
 {
 	ShowCur(false);
+	vechuABOUT(0, 2);
 	SetColor(0, 15);
 	DrawBound();
 	Draw_Guide(65, 35, text.goBackText);

@@ -7,7 +7,9 @@
 #include "LanguageText.h"
 #include "Draw.h"
 #include "Bot.h"
+#include "Timer.h"
 #include <atomic>
+#include <stack>
 _POINT _A[BOARD_SIZE][BOARD_SIZE];
 bool _TURN;
 int _COMMAND;
@@ -16,6 +18,13 @@ Player Player_1, Player_2;
 Language currentLanguage;
 int positions[5][2];
 atomic<bool> keep;
+
+// Cấu trúc lưu nước đi
+struct Move {
+	int x, y;    // Tọa độ
+	int player;  // Người chơi (-1: Player 1, 1: Player 2)
+};
+stack<Move> moveHistoryP; // Stack lưu lịch sử nước đi
 //// Hàm nhóm View
 void ShowCur(bool CursorVisibility) {
 	CONSOLE_CURSOR_INFO cursorInfo;
@@ -98,7 +107,13 @@ void Box_Menu(int x, int y, int w, int h, string nd) {
 		GotoXY(x + w, iy);
 		cout << char(186);
 	}
-
+	//for (int ix = x+1; ix < x + w; ix++) {
+	//	for (int iy = y+1; iy < y + h; iy++) {
+	//		SetColor(0, 15);
+	//		cout << " ";
+	//	}
+	//}
+	
 	GotoXY(x, y); cout << char(201);
 	GotoXY(x + w, y); cout << char(187);
 	GotoXY(x, y + h); cout << char(200);
@@ -118,6 +133,22 @@ void ResetGame()
 		}
 	}
 	_TURN = true; _COMMAND = -1; //Gán lượt và phím mặt định
+	_X = _A[0][0].x; _Y = _A[0][0].y; //Thiết lập lại tọa đồ hiện hành ban đầu
+}
+//Doi luot danh dau tien, vi du X thang thi van tiep theo doi cho O danh dau tien
+void ResetGameInOneGame()
+{
+	for (int i = 0; i < BOARD_SIZE; i++)
+	{
+		for (int j = 0; j < BOARD_SIZE; j++)
+		{
+			_A[i][j].x = 4 * j + LEFT + 2; //Trùng với hoành độ màn hình bàn cờ
+			_A[i][j].y = 2 * i + TOP + 1; //Trùng với tung độ màn hình bàn cờ
+			_A[i][j].c = 0; //0: chưa đánh dấu, -1: true đánh, 1: fasle đánh
+		}
+	}
+	_TURN = !_TURN;
+	 _COMMAND = -1; //Gán lượt và phím mặt định
 	_X = _A[0][0].x; _Y = _A[0][0].y; //Thiết lập lại tọa đồ hiện hành ban đầu
 }
 
@@ -258,7 +289,7 @@ bool isDraw() {
 }
 
 void InputPvP(int x, int y, int w, int h) {
-	Box(x, y, w, h);
+	Box(x, y, w, h+3);
 	system("Color F0");
 	Draw_Guide(50, 35, text.inputText + ", " + text.selectText);
 	DrawBound();
@@ -266,36 +297,42 @@ void InputPvP(int x, int y, int w, int h) {
 
 	SetColor(4, 15);
 	GotoXY(x + 1, y + 1);
-	cout << text.nameText1;
+	cout << text.nameText1 << endl;
 	char c;
 	Player_1.Name = "";
+	GotoXY(x + 1, y + 2);
 	// Nhập tên cho Player 1
+	SetColor(4, 14);
 	while (true) {
 		c = _getch();
-		if (c == 13)
-		{
+
+		// Nếu nhấn Enter
+		if (c == 13) { // 13 là mã ASCII của Enter
 			playSelectSound();
-			break; // Nhấn Enter để kết thúc nhập tên
+			break;
 		}
-		if (c == 8 && !Player_1.Name.empty()) { // Kiểm tra chuỗi trống khi dùng Backspace
+		// Nếu nhấn Backspace
+		else if (c == 8 && !Player_1.Name.empty()) { // 8 là mã ASCII của Backspace
 			Player_1.Name.pop_back();
-			GotoXY(x + 19, y + 1);
+			GotoXY(x + 1, y + 2);
 			cout << Player_1.Name << " "; // In lại chuỗi và xóa ký tự dư thừa
-			GotoXY(x + 19 + Player_1.Name.length(), y + 1);
+			GotoXY(x + 1 , y + 2);
 		}
-		else if ((isalpha(c) || c == ' ') && Player_1.Name.length() <= 10) { // Chỉ nhận chữ cái hoặc dấu cách và giới hạn 10 ký tự
-			c = toupper(c); // Chuyển ký tự sang chữ hoa
-			cout << c;
+		// Nếu nhập ký tự hợp lệ
+		else if ((isalpha(c) || c == ' ') && Player_1.Name.length() < 10) {
+			c = toupper(c); // Chuyển sang chữ hoa
 			Player_1.Name += c;
+			cout << c;
 		}
 	}
 
 	Player_2.Name = "";
 	while (true) {
-		GotoXY(x + 1, y + 4);
+		GotoXY(x + 1, y + 5);
 		SetColor(1, 15);
-		cout << text.nameText2;
-
+		cout << text.nameText2 << endl;
+		GotoXY(x + 1, y + 6);
+		SetColor(1, 14);
 		while (true) {
 			c = _getch();
 			if (c == 13) {
@@ -304,9 +341,9 @@ void InputPvP(int x, int y, int w, int h) {
 			}
 			if (c == 8 && !Player_2.Name.empty()) { // Check for empty string with Backspace
 				Player_2.Name.pop_back();
-				GotoXY(x + 19, y + 4);
+				GotoXY(x + 1, y + 6);
 				cout << Player_2.Name << " ";
-				GotoXY(x + 19 + Player_2.Name.length(), y + 4);
+				GotoXY(x + 1, y + 6);
 			}
 			else if ((isalpha(c) || c == ' ') && Player_2.Name.length() <= 10) { // Only accept letters or spaces and limit to 10 characters
 				c = toupper(c);
@@ -317,15 +354,15 @@ void InputPvP(int x, int y, int w, int h) {
 
 		// Check if Player 2's name is the same as Player 1's name
 		if (Player_2.Name == Player_1.Name) {
-			GotoXY(x + 1, y + 5); // Display error message
+			GotoXY(x + 1, y + 7); // Display error message
 			SetColor(12, 15); // Red text color for error
-			cout << "Error: Name must be different from Player 1, again!";
-
+			//cout << "Error: Name must be different from Player 1, again!";
+			cout << text.ErrorGetName;
 			// Clear the previous duplicate name
 			Player_2.Name = ""; // Reset Player 2's name
-			GotoXY(x + 19, y + 4);
+			GotoXY(x + 1, y + 6);
 			cout << "          "; // Overwrite old name with spaces
-			GotoXY(x + 19, y + 4); // Move cursor back to the starting position for Player 2's name
+			GotoXY(x + 1, y + 6); // Move cursor back to the starting position for Player 2's name
 		}
 		else {
 			break; // Exit loop if names are different
@@ -346,34 +383,374 @@ void InputPvC(int x, int y, int w, int h) {
 	cout << text.nameText1;
 	char c;
 	Player_1.Name = "";
+	GotoXY(x + 1, y + 2);
 	// Nhập tên cho Player 1
+	SetColor(4, 14);
 	while (true) {
 		c = _getch();
-		if (c == 13)
-		{
+
+		// Nếu nhấn Enter
+		if (c == 13) { // 13 là mã ASCII của Enter
 			playSelectSound();
-			break; // Nhấn Enter để kết thúc nhập tên
+			break;
 		}
-		if (c == 8 && !Player_1.Name.empty()) { // Kiểm tra chuỗi trống khi dùng Backspace
+		// Nếu nhấn Backspace
+		else if (c == 8 && !Player_1.Name.empty()) { // 8 là mã ASCII của Backspace
 			Player_1.Name.pop_back();
-			GotoXY(x + 19, y + 1);
+			GotoXY(x + 1, y + 2);
 			cout << Player_1.Name << " "; // In lại chuỗi và xóa ký tự dư thừa
-			GotoXY(x + 19 + Player_1.Name.length(), y + 1);
+			GotoXY(x + 1, y + 2);
 		}
-		else if ((isalpha(c) || c == ' ') && Player_1.Name.length() <= 10) { // Chỉ nhận chữ cái hoặc dấu cách và giới hạn 10 ký tự
-			c = toupper(c); // Chuyển ký tự sang chữ hoa
-			cout << c;
+		// Nếu nhập ký tự hợp lệ
+		else if ((isalpha(c) || c == ' ') && Player_1.Name.length() < 10) {
+			c = toupper(c); // Chuyển sang chữ hoa
 			Player_1.Name += c;
+			cout << c;
 		}
 	}
 	Player_2.Name = "Bot"; // Đặt tên cho Player 2 là Bot
 
 	// In tên cho Player 2
-	GotoXY(x + 1, y + 4);
+	GotoXY(x + 1, y + 5);
 	SetColor(1, 15);
 	cout << "Player 2 (O): " << Player_2.Name << " (Bot)";
 	SetColor(15, 0);
 	ChooseAvatar();
+}
+
+void GamePlayTimerPvP() {
+	 // Bắt đầu đếm thời gian: 5 phút ván đấu, 30 giây mỗi lượt
+
+	StartTimer(MAXTIMEGAME, MAXTIMETURN); // tai lai van dau voi thoi gian tai len tu file 
+	bool validEnter = true;
+
+	while (true) {
+
+		if (isTurnSkipped) {
+			{
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+			HighlightPlayer(70, 6, 28, 12);
+		}
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);		
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+	
+				switch (ProcessFinish(0)) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+						break;
+					}
+				}
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // Phím ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter để đánh dấu nước đi
+			playSelectSound();
+			
+			switch (CheckBoard(_X, _Y)) {
+			case -1:  // Người chơi 1 đánh
+			{
+				turnTimer = MAXTIMETURN;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+			
+			case 1:   // Người chơi 2 đánh
+			{
+				turnTimer = MAXTIMETURN;
+				screenMutex.lock();				
+				SetColor(1, 15);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+				
+			case 0:   // Ô đã được đánh dấu
+				validEnter = false;
+				break;
+			}
+
+			// Kiểm tra kết quả ván đấu nếu lượt hợp lệ
+			if (validEnter) {
+				
+					if (validEnter) {
+						switch (ProcessFinish(TestBoard())) {
+						case -1:  // Người chơi thắng
+						case 1:   // Hòa
+						case 0:   // Tiếp tục
+							if (AskContinue() != 'Y') {
+								if (AskSaveGame() == 'Y') {
+									SaveGame();
+									MainMenu();
+									return;
+								}
+								else {
+									system("cls");
+									MainMenu();
+								}
+							}
+							else {
+								StartTimer(MAXTIMEGAME, MAXTIMETURN);
+								StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+								break;
+							}
+						}
+					}
+				
+			}
+			validEnter = true;  // Reset trạng thái cho lượt tiếp theo
+			/*turnTimer = 5; */    // Reset thời gian lượt tiếp theo
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+		}
+	}
+}
+void GamePlayTimerLoadPvP() {
+	// Bắt đầu đếm thời gian: 5 phút ván đấu, 30 giây mỗi lượt
+
+	StartTimer(gameTimer, turnTimer); // tai lai van dau voi thoi gian tai len tu file 
+	bool validEnter = true;
+
+	while (true) {
+
+		if (isTurnSkipped) {
+			{
+				//std::lock_guard<std::mutex> lock(timerMutex); // Đảm bảo đồng bộ
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+
+			HighlightPlayer(70, 6, 28, 12);
+		}
+
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+			//system("cls");
+
+			switch (ProcessFinish(0)) {
+			case -1:  // Người chơi thắng
+			case 1:   // Hòa
+			case 0:   // Tiếp tục
+				if (AskContinue() != 'Y') {
+					if (AskSaveGame() == 'Y') {
+						SaveGame();
+						MainMenu();
+						return;
+					}
+					else {
+						system("cls");
+						MainMenu();
+					}
+				}
+				else {
+					StartTimer(MAXTIMEGAME, MAXTIMETURN);
+					StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+					break;
+				}
+			}
+			
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // Phím ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter để đánh dấu nước đi
+			playSelectSound();
+
+			switch (CheckBoard(_X, _Y)) {
+			case -1:  // Người chơi 1 đánh
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+
+			case 1:   // Người chơi 2 đánh
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(1, 15);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+
+			case 0:   // Ô đã được đánh dấu
+				validEnter = false;
+				break;
+			}
+
+			// Kiểm tra kết quả ván đấu nếu lượt hợp lệ
+			if (validEnter) {
+
+				if (validEnter) {
+					switch (ProcessFinish(TestBoard())) {
+					case -1:  // Người chơi thắng
+					case 1:   // Hòa
+					case 0:   // Tiếp tục
+						if (AskContinue() != 'Y') {
+							if (AskSaveGame() == 'Y') {
+								SaveGame();
+								MainMenu();
+								return;
+							}
+							else {
+								system("cls");
+								MainMenu();
+							}
+						}
+						else {
+							StartTimer(MAXTIMEGAME, MAXTIMETURN);
+							StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+							break;
+						}
+					}
+				}
+
+			}
+			validEnter = true;  // Reset trạng thái cho lượt tiếp theo
+			/*turnTimer = 5; */    // Reset thời gian lượt tiếp theo
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+		}
+	}
 }
 
 void GamePlayPvP() {
@@ -391,36 +768,71 @@ void GamePlayPvP() {
 			continue;            // Tiếp tục vòng lặp
 		}
 		else if (_COMMAND == 'A') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveLeft();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'W') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveUp();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'S') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveDown();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'D') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'Z') {  // Phím Z để hủy nước đi trước đó
+			if (!moveHistoryP.empty()) {
+				Move lastMove = moveHistoryP.top(); // Lấy nước đi cuối cùng
+				moveHistoryP.pop();  // Xóa khỏi lịch sử
+				GotoXY(lastMove.x, lastMove.y);
+				for (int i = 0; i < BOARD_SIZE; i++) {
+					for (int j = 0; j < BOARD_SIZE; j++) {
+						if (_A[i][j].x == lastMove.x && _A[i][j].y == lastMove.y) {
+							_A[i][j].c = 0;
+						}
+					}
+				}
+				_TURN = !_TURN;
+				printf(" ");  // Xóa ký tự trên màn hình
+				// Giảm lượt đi của người chơi tương ứng
+				if (lastMove.player == -1) {
+					Player_1.Moves--;
+				}
+				else if (lastMove.player == 1) {
+					Player_2.Moves--;
+				}
+				Draw_infor1(70, 6, 28, 12); // Cập nhật thông tin trên giao diện
+				GotoXY(lastMove.x, lastMove.y);
+			}
 		}
 		else if (_COMMAND == 13) {  // Phím Enter để đánh dấu nước đi
-			playSelectSound();
+			playSelectSound();        
 			// Kiểm tra ô có hợp lệ hay không
 			switch (CheckBoard(_X, _Y)) {
 			case -1:  // Người chơi 1 đánh
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				Draw_infor(70, 3, 28, 13);
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _X, _Y, -1 });  // Lưu nước đi vào lịch sử
 				break;
 			case 1:   // Người chơi 2 đánh
 				SetColor(1, 15);
 				printf("O");
 				Player_2.Moves++;
-				Draw_infor(70, 3, 28, 13);
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _X, _Y, 1 });  // Lưu nước đi vào lịch sử
 				break;
 			case 0:   // Ô đã được đánh dấu
 				validEnter = false;
@@ -446,7 +858,7 @@ void GamePlayPvP() {
 						}
 					}
 					else {
-						StartGame();    // Bắt đầu trò chơi mới
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
 						break;
 					}
 				}
@@ -460,7 +872,7 @@ void GamePlayPvP() {
 				return;
 			}
 			else {
-				system("cls");					
+				system("cls");
 				DrawLoaded(_A);
 				SubMenu();
 				DrawLoaded(_A);
@@ -468,8 +880,7 @@ void GamePlayPvP() {
 		}
 	}
 }
-
-void GamePlayPvC() {
+void EasyGamePlayPvC() {
 	//int count = -1;
 	bool validEnter = true;
 
@@ -485,20 +896,28 @@ void GamePlayPvC() {
 			continue;
 		}
 		else if (_COMMAND == 'A') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveLeft();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'W') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveUp();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'S') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveDown();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 'D') {
+			screenMutex.lock();
 			playMoveSound();
 			MoveRight();
+			screenMutex.unlock();
 		}
 		else if (_COMMAND == 13) {  // Phím Enter
 			playSelectSound();
@@ -507,7 +926,8 @@ void GamePlayPvC() {
 				SetColor(4, 15);
 				printf("X");
 				Player_1.Moves++;
-				Draw_infor(70, 3, 28, 13);
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _X,_Y,-1 });
 				break;
 			case 0:
 				validEnter = false;
@@ -531,7 +951,7 @@ void GamePlayPvC() {
 						}
 					}
 					else {
-						StartGame();    // Bắt đầu trò chơi mới
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
 						break;
 					}
 				}
@@ -543,8 +963,8 @@ void GamePlayPvC() {
 				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
 				printf("O");
 				Player_2.Moves++;
-				Draw_infor(70, 3, 28, 13);
-
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _A[pX][pY].x, _A[pX][pY].y, 1 });
 				Sleep(300);
 
 				switch (ProcessFinish(TestBoard())) {
@@ -563,12 +983,39 @@ void GamePlayPvC() {
 						}
 					}
 					else {
-						StartGame();    // Bắt đầu trò chơi mới
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
 						break;
 					}
 				}
 			}
 			validEnter = true;
+		}
+		else if (_COMMAND == 'Z') {  // Phím Z để hủy 2 nước đi trước đó
+			if (moveHistoryP.size() >= 2) {  // Kiểm tra xem có đủ 2 nước đi để hủy không
+				for (int i = 0; i < 2; ++i) {
+					Move lastMove = moveHistoryP.top(); // Lấy nước đi cuối cùng
+					moveHistoryP.pop();  // Xóa khỏi lịch sử
+					for (int i = 0; i < BOARD_SIZE; i++) {
+						for (int j = 0; j < BOARD_SIZE; j++) {
+							if (_A[i][j].x == lastMove.x && _A[i][j].y == lastMove.y) {
+								_A[i][j].c = 0;  // Xóa ký tự trong bảng
+							}
+						}
+					}
+					GotoXY(lastMove.x, lastMove.y);
+					printf(" ");  // Xóa ký tự trên màn hình
+					// Giảm lượt đi của người chơi tương ứng
+					if (lastMove.player == -1) {
+						Player_1.Moves--;
+					}
+					else if (lastMove.player == 1) {
+						Player_2.Moves--;
+					}
+					Draw_infor1(70, 6, 28, 12); // Cập nhật thông tin trên giao diện
+					GotoXY(lastMove.x, lastMove.y);
+				}
+
+			}
 		}
 		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
 			if (AskSaveGame() == 'Y') {
@@ -586,43 +1033,910 @@ void GamePlayPvC() {
 		}
 	}
 }
+void EasyGamePlayTimerPvC() {
+	StartTimer(MAXTIMEGAME, MAXTIMETURN);
+	//StartTimer(gameTimer, turnTimer);
+	bool validEnter = true;
 
-void SetConsoleBackgroundColor() {
-	CHAR_INFO charInfo;
-	COORD bufferSize = { 1, 1 };
-	COORD bufferCoord = { 0, 0 };
-	SMALL_RECT readRegion;
-
-	// Duyệt qua các vị trí
-	for (int i = 0; i < 5; i++) {
-		// Lấy tọa độ x và y từ positions
-		int x = _A[positions[i][0]][positions[i][1]].x;
-		int y = _A[positions[i][0]][positions[i][1]].y;
-
-		// Xác định vùng đọc chỉ với một ô tại tọa độ (x, y)
-		readRegion = { SHORT(x), SHORT(y), SHORT(x), SHORT(y) };
-
-		// Đọc ký tự và thuộc tính màu sắc gốc tại vị trí
-		if (!ReadConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE), &charInfo, bufferSize, bufferCoord, &readRegion)) {
-			std::cerr << "Failed to read console output.\n";
-			return;
+	while (true) {
+		if (isTurnSkipped) {
+			{
+				//std::lock_guard<std::mutex> lock(timerMutex); // Đảm bảo đồng bộ
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+			HighlightPlayer(70, 6, 28, 12);
 		}
 
-		// Chỉ thay đổi màu chữ thành xanh lá (FOREGROUND_GREEN), giữ nguyên nền
-		WORD newAttributes = (charInfo.Attributes & 0xF0) | FOREGROUND_GREEN;
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+			//system("cls");
 
-		// Cập nhật thuộc tính của ký tự tại vị trí, giữ nguyên ký tự gốc và chỉ thay đổi màu chữ
-		charInfo.Attributes = newAttributes;
+			switch (ProcessFinish(0)) {
+			case -1:  // Người chơi thắng
+			case 1:   // Hòa
+			case 0:   // Tiếp tục
+				if (AskContinue() != 'Y') {
+					if (AskSaveGame() == 'Y') {
+						SaveGame();
+						MainMenu();
+						return;
+					}
+					else {
+						system("cls");
+						MainMenu();
+					}
+				}
+				else {
+					StartTimer(MAXTIMEGAME, MAXTIMETURN);
+					StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+					break;
+				}
+			}
 
-		// Viết lại ký tự với màu xanh lá mà không làm thay đổi nền
-		if (!WriteConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE), &charInfo, bufferSize, bufferCoord, &readRegion)) {
-			std::cerr << "Failed to write console output.\n";
-			return;
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter
+			playSelectSound();
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			switch (CheckBoard(_X, _Y)) {
+			case -1:
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+			case 0:
+				validEnter = false;
+				break;
+			}
+
+			if (validEnter) {
+				switch (ProcessFinish(TestBoard())) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+
+				// Lượt của máy
+				int pX, pY;
+				MediumBot(_X, _Y, pX, pY);
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(1, 15);
+				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+
+
+				//Sleep(600);
+
+				switch (ProcessFinish(TestBoard())) {
+				case -1:
+				case 1:
+				case 0:
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+			}
+			validEnter = true;
+
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+
+
 		}
 	}
+}
+void EasyGamePlayTimerLoadPvC() {
+	//StartTimer(30, 5);
+	StartTimer(gameTimer, turnTimer);
+	bool validEnter = true;
 
-	// Đặt lại màu sắc về mặc định (màu trắng)
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+	while (true) {
+		if (isTurnSkipped) {
+			{
+				//std::lock_guard<std::mutex> lock(timerMutex); // Đảm bảo đồng bộ
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+			HighlightPlayer(70, 6, 28, 12);
+		}
+
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+			//system("cls");
+
+			switch (ProcessFinish(0)) {
+			case -1:  // Người chơi thắng
+			case 1:   // Hòa
+			case 0:   // Tiếp tục
+				if (AskContinue() != 'Y') {
+					if (AskSaveGame() == 'Y') {
+						SaveGame();
+						MainMenu();
+						return;
+					}
+					else {
+						system("cls");
+						MainMenu();
+					}
+				}
+				else {
+					StartTimer(MAXTIMEGAME, MAXTIMETURN);
+					StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+					break;
+				}
+			}
+
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter
+			playSelectSound();
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			switch (CheckBoard(_X, _Y)) {
+			case -1:
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+			case 0:
+				validEnter = false;
+				break;
+			}
+
+			if (validEnter) {
+				switch (ProcessFinish(TestBoard())) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+
+				// Lượt của máy
+				int pX, pY;
+				MediumBot(_X, _Y, pX, pY);
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(1, 15);
+				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+
+
+				//Sleep(600);
+
+				switch (ProcessFinish(TestBoard())) {
+				case -1:
+				case 1:
+				case 0:
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+			}
+			validEnter = true;
+
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+
+
+		}
+	}
+}
+void HardGamePlayPvC() {
+	//int count = -1;
+	bool validEnter = true;
+
+	while (true) {
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // ESC để mở menu phụ
+			playSelectSound();
+			SubMenu();
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter
+			playSelectSound();
+			switch (CheckBoard(_X, _Y)) {
+			case -1:
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _X,_Y,-1 });
+				break;
+			case 0:
+				validEnter = false;
+				break;
+			}
+
+			if (validEnter) {
+				switch (ProcessFinish(TestBoard())) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+
+				// Lượt của máy
+				int pX, pY;
+				improvedBot(_X, _Y, pX, pY);
+				SetColor(1, 15);
+				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				moveHistoryP.push({ _A[pX][pY].x, _A[pX][pY].y, 1 });
+				Sleep(300);
+
+				switch (ProcessFinish(TestBoard())) {
+				case -1:
+				case 1:
+				case 0:
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {						
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+			}
+			validEnter = true;
+		}
+		else if (_COMMAND == 'Z') {  // Phím Z để hủy 2 nước đi trước đó
+			if (moveHistoryP.size() >= 2) {  // Kiểm tra xem có đủ 2 nước đi để hủy không
+				for (int i = 0; i < 2; ++i) {
+					Move lastMove = moveHistoryP.top(); // Lấy nước đi cuối cùng
+					moveHistoryP.pop();  // Xóa khỏi lịch sử
+					for (int i = 0; i < BOARD_SIZE; i++) {
+						for (int j = 0; j < BOARD_SIZE; j++) {
+							if (_A[i][j].x == lastMove.x && _A[i][j].y == lastMove.y) {
+								_A[i][j].c = 0;  // Xóa ký tự trong bảng
+							}
+						}
+					}
+					GotoXY(lastMove.x, lastMove.y);
+					printf(" ");  // Xóa ký tự trên màn hình
+					// Giảm lượt đi của người chơi tương ứng
+					if (lastMove.player == -1) {
+						Player_1.Moves--;
+					}
+					else if (lastMove.player == 1) {
+						Player_2.Moves--;
+					}
+					Draw_infor1(70, 6, 28, 12); // Cập nhật thông tin trên giao diện
+					GotoXY(lastMove.x, lastMove.y);
+				}
+			
+			}
+			}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				DrawLoaded(_A);
+			}
+
+		}
+	}
+}
+void HardGamePlayTimerPvC() {
+	StartTimer(MAXTIMEGAME, MAXTIMETURN);
+	//StartTimer(gameTimer, turnTimer);
+	bool validEnter = true;
+
+	while (true) {
+		if (isTurnSkipped) {
+			{
+				//std::lock_guard<std::mutex> lock(timerMutex); // Đảm bảo đồng bộ
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+			HighlightPlayer(70, 6, 28, 12);
+		}
+
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+			//system("cls");
+
+			switch (ProcessFinish(0)) {
+			case -1:  // Người chơi thắng
+			case 1:   // Hòa
+			case 0:   // Tiếp tục
+				if (AskContinue() != 'Y') {
+					if (AskSaveGame() == 'Y') {
+						SaveGame();
+						MainMenu();
+						return;
+					}
+					else {
+						system("cls");
+						MainMenu();
+					}
+				}
+				else {
+					StartTimer(MAXTIMEGAME, MAXTIMETURN);
+					StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+					break;
+				}
+			}
+			
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter
+			playSelectSound();
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			switch (CheckBoard(_X, _Y)) {
+			case -1:
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+			case 0:
+				validEnter = false;
+				break;
+			}
+
+			if (validEnter) {
+				switch (ProcessFinish(TestBoard())) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+
+				// Lượt của máy
+				int pX, pY;
+				improvedBot(_X, _Y, pX, pY);
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(1, 15);
+				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);	
+				screenMutex.unlock();
+
+
+				//Sleep(600);
+
+				switch (ProcessFinish(TestBoard())) {
+				case -1:
+				case 1:
+				case 0:
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+			}
+			validEnter = true;
+			
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+			
+
+		}
+	}
+}
+void HardGamePlayTimerLoadPvC() {
+	//StartTimer(30, 5);
+	StartTimer(gameTimer, turnTimer);
+	bool validEnter = true;
+
+	while (true) {
+		if (isTurnSkipped) {
+			{
+				//std::lock_guard<std::mutex> lock(timerMutex); // Đảm bảo đồng bộ
+				timerMutex.lock();
+				_TURN = !_TURN; // Chuyển lượt
+				isTurnSkipped = false; // Reset trạng thái
+				timerMutex.unlock();
+			}
+			HighlightPlayer(70, 6, 28, 12);
+		}
+
+		// Kiểm tra hết thời gian game
+		if (gameTimer <= 0) {
+			GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 2);
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			screenMutex.lock();
+			std::cout << "Game over: Total time expired!";
+			screenMutex.unlock();
+			StopTimer();
+			//system("cls");
+
+			switch (ProcessFinish(0)) {
+			case -1:  // Người chơi thắng
+			case 1:   // Hòa
+			case 0:   // Tiếp tục
+				if (AskContinue() != 'Y') {
+					if (AskSaveGame() == 'Y') {
+						SaveGame();
+						MainMenu();
+						return;
+					}
+					else {
+						system("cls");
+						MainMenu();
+					}
+				}
+				else {
+					StartTimer(MAXTIMEGAME, MAXTIMETURN);
+					StartGameInOneGame();    // Bắt đầu trò chơi mới trong 1 game dang choi
+					break;
+				}
+			}
+			
+		}
+		_COMMAND = toupper(_getch());
+
+		if (_COMMAND == 27) {  // ESC để mở menu phụ
+			playSelectSound();
+			StopTimer();
+			SubMenu();
+			StartTimer(gameTimer, turnTimer);
+			system("cls");
+			SetColor(0, 15);
+			DrawLoaded(_A);
+			continue;
+		}
+		else if (_COMMAND == 'A') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveLeft();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'W') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveUp();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'S') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveDown();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 'D') {
+			screenMutex.lock();
+			playMoveSound();
+			MoveRight();
+			screenMutex.unlock();
+		}
+		else if (_COMMAND == 13) {  // Phím Enter
+			playSelectSound();
+			//std::lock_guard<std::mutex> lock(screenMutex);
+			switch (CheckBoard(_X, _Y)) {
+			case -1:
+			{
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(4, 15);
+				printf("X");
+				Player_1.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+				break;
+			}
+			case 0:
+				validEnter = false;
+				break;
+			}
+
+			if (validEnter) {
+				switch (ProcessFinish(TestBoard())) {
+				case -1:  // Người chơi thắng
+				case 1:   // Hòa
+				case 0:   // Tiếp tục
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+
+				// Lượt của máy
+				int pX, pY;
+				improvedBot(_X, _Y, pX, pY);
+				turnTimer = 5;
+				screenMutex.lock();
+				SetColor(1, 15);
+				GotoXY(_A[pX][pY].x, _A[pX][pY].y);
+				printf("O");
+				Player_2.Moves++;
+				Draw_infor(70, 6, 28, 12);
+				screenMutex.unlock();
+
+
+				//Sleep(600);
+
+				switch (ProcessFinish(TestBoard())) {
+				case -1:
+				case 1:
+				case 0:
+					if (AskContinue() != 'Y') {
+						if (AskSaveGame() == 'Y') {
+							SaveGame();
+							MainMenu();
+							return;
+						}
+						else {
+							system("cls");
+							MainMenu();
+						}
+					}
+					else {
+						StartTimer(MAXTIMEGAME, MAXTIMETURN);
+						StartGameInOneGame();    // Bắt đầu trò chơi mới
+						break;
+					}
+				}
+			}
+			validEnter = true;
+
+		}
+		else if (_COMMAND == 'L') {  // Lưu trò chơi và quay lại Menu chính
+			StopTimer();
+			if (AskSaveGame() == 'Y') {
+				SaveGame();
+				MainMenu();
+				return;
+			}
+			else {
+				system("cls");
+				DrawLoaded(_A);
+				SubMenu();
+				StartTimer(gameTimer, turnTimer);
+				DrawLoaded(_A);
+			}
+
+
+		}
+	}
 }
 
 // Hàm nhóm Control (Điều khiển trò chơi)
@@ -635,19 +1949,36 @@ void StartGame() {
 	keep = false;
 	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
 	DrawGuideGame(3, 35);
-	Draw_infor1(70, 3, 28, 13);
-	
+	Draw_infor1(70, 6, 28, 12);
+	DrawGameMode(70, 3, choicestyle, choicegame);
 	GotoXY(_X, _Y);
+}
+//Dam bao rang se doi luot sau moi tran thang, vi du x thang thi doi luot sang o
+void StartGameInOneGame() {
+	system("Color F0");
+	system("cls");
+	DrawBound();
+	ResetGameInOneGame(); // Khoi tao lai ban co, toa do, khong xoa win, move
+	ShowCur(true);
+	keep = false;
+	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
+	DrawGuideGame(3, 35);
+	Draw_infor1(70, 6, 28, 12);
+	DrawGameMode(70, 3, choicestyle, choicegame);
+	GotoXY(_X, _Y);
+	
 }
 void MoveRight() {
 	if (_X < _A[BOARD_SIZE - 1][BOARD_SIZE - 1].x)
 	{
+		int _x = _X;
 		_X += 4;
 		GotoXY(_X, _Y);
 	}
 }
 void MoveLeft() {
 	if (_X > _A[0][0].x) {
+		int _x = _X;
 		_X -= 4;
 		GotoXY(_X, _Y);
 	}
@@ -667,24 +1998,43 @@ void MoveUp() {
 }
 // Hàm hỏi người chơi có tiếp tục hay không
 int AskContinue() {
-	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
-	cout<<text.askContinueText;
-	return toupper(_getch()); // Đọc ký tự và trả về dạng chữ hoa
-
+	char choice;
+	do {
+		GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
+		SetColor(2, 15);
+		cout << text.askContinueText;
+		choice = toupper(_getch()); // Đọc ký tự và chuyển sang chữ hoa
+		if (choice != 'Y' && choice != 'N') {
+			GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 5); // Hiện cảnh báo phía dưới
+			SetColor(4, 15);
+			cout << text.errorYN;
+			SetColor(0, 15);
+		}
+	} while (choice != 'Y' && choice != 'N'); // Lặp lại nếu nhập sai
+	return choice;
 }
-int AskSaveGame()
-{
-	SetColor(0, 15);
-	GotoXY(75 + 10, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
-	cout<<text.askSaveGameText;
-	return toupper(_getch());
 
+int AskSaveGame() {
+	char choice;
+	do {
+		GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 4); // Nhảy đến vị trí để hỏi người chơi
+		SetColor(2, 15);
+		cout << text.askSaveGameText;
+		choice = toupper(_getch()); // Đọc ký tự và chuyển sang chữ hoa
+		if (choice != 'Y' && choice != 'N') {
+			GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 5); // Hiện cảnh báo phía dưới
+			SetColor(4, 15);
+			cout << text.errorYN;
+			SetColor(0, 15);
+		}
+	} while (choice != 'Y' && choice != 'N'); // Lặp lại nếu nhập sai
+	return choice;
 }
 void BlinkConsoleCharacters() {
 	CHAR_INFO charInfo;
 	COORD bufferSize = { 1, 1 };
 	COORD bufferCoord = { 0, 0 };
-	SMALL_RECT readRegion;
+	SMALL_RECT readRegion;	
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	// Kiểm tra nếu không thể lấy handle console
 	if (hConsole == INVALID_HANDLE_VALUE) {
@@ -733,6 +2083,7 @@ int ProcessFinish(int pWhoWin) {
 
 	case -1:
 	{
+		StopTimer();
 		keep = true;
 		thread nhapnhay(BlinkConsoleCharacters);
 		nhapnhay.detach();
@@ -742,9 +2093,15 @@ int ProcessFinish(int pWhoWin) {
 		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
 		nhapnhayX(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);
 		keep = false;
+		GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 5);
+		SetColor(2, 15);
+		system("pause");
+		SetColor(0, 15);
+		drawBangthongbao(32, 10, 80, 20, -1, choicegame, choicestyle);
 		break;
 	case 1:
 	{
+		StopTimer();
 		keep = true;
 		thread nhapnhay(BlinkConsoleCharacters);
 		nhapnhay.detach();
@@ -754,12 +2111,23 @@ int ProcessFinish(int pWhoWin) {
 		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
 		nhapnhayO(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 6);
 		keep = false;
+		GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 5); 
+		SetColor(2, 15); 
+		system("pause");
+		SetColor(0, 15);
+		drawBangthongbao(32, 10, 80, 20, 1, choicegame, choicestyle);
 		break;
 	case 0:
+		StopTimer();
 		playDRAWGameMusic();
 		Box(70, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 9, 63, 10);
 		nhapnhayDRAW(75, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y - 7);
+		GotoXY(60, _A[BOARD_SIZE - 1][BOARD_SIZE - 1].y + 5);
+		SetColor(2, 15); 
+		system("pause");
 		SetColor(0, 15);
+		drawBangthongbao(32, 10, 80, 20, 0, choicegame, choicestyle);
+		
 		break;
 	case 2:
 		_TURN = !_TURN; // Đổi lượt nếu không có gì xảy ra

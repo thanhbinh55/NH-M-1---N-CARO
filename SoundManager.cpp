@@ -5,6 +5,7 @@
 bool isBackgroundMusicOpen = true;
 bool isSoundEffectEnabled = true;
 bool firstTime = true;
+int a1 = 500;//bien am luong
 
 void InitializeAudioSettings() {
     if (firstTime) {
@@ -20,18 +21,22 @@ void playWINGameMusic() {
         PlaySound(moveSoundPath, NULL, SND_FILENAME | SND_ASYNC);
     }
 }
+
 void playDRAWGameMusic() {
     if (isSoundEffectEnabled) {
         const wchar_t* moveSoundPath = L"Draw.wav";
         PlaySound(moveSoundPath, NULL, SND_FILENAME | SND_ASYNC);
     }
 }
-void playBackgroundMusic(bool play) {
+void playBackgroundMusic(bool play, int volume) {
     if (play) {
         const wchar_t* filePath = L"GameBGM.mp3"; //truy cap duong den duong dan cua file nhac
 
         // Thực hiện phát nhạc
         mciSendString((L"open \"" + std::wstring(filePath) + L"\" type mpegvideo alias bgm").c_str(), NULL, 0, NULL);
+        // Điều chỉnh âm lượng (0 đến 1000)
+        std::wstring volumeCommand = L"setaudio bgm volume to " + std::to_wstring(volume);
+        mciSendString(volumeCommand.c_str(), NULL, 0, NULL);
         mciSendString(L"play bgm repeat", NULL, 0, NULL);
     }
     else {

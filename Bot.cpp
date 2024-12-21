@@ -1,5 +1,223 @@
 ﻿#include "Bot.h"
 
+
+const int directions[4][2] = { {1, 0}, {0, 1}, {1, 1}, {1, -1} };  // Hướng: ngang, dọc, chéo chính, chéo phụ
+
+// Hàm đếm số quân liền nhau trong một hướng (dx, dy)
+int countInLine(int x, int y, int dx, int dy, int player) {
+	int count = 0;
+	while (x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE && _A[x][y].c == player) {
+		count++;
+		x += dx;
+		y += dy;
+	}
+	return count;
+}
+
+// Hàm kiểm tra và chặn chuỗi quân cờ nguy hiểm của đối thủ
+bool blockOpponent(int& pX, int& pY) {
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].c == -1) {  // Nếu ô này là quân của đối thủ
+				for (auto dir : directions) {
+					int count = 1;  // Đếm quân cờ liên tiếp
+					int emptyFrontX = -1, emptyFrontY = -1;
+					int emptyBackX = -1, emptyBackY = -1;
+
+					// Đi xuôi theo hướng
+					for (int step = 1; step <= 4; step++) {
+						int nx = i + dir[0] * step;
+						int ny = j + dir[1] * step;
+
+						if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+							if (_A[nx][ny].c == -1) count++;  // Đếm quân đối thủ
+							else if (_A[nx][ny].c == 0 && emptyFrontX == -1) {
+								emptyFrontX = nx;
+								emptyFrontY = ny;
+							}
+							else break;
+						}
+					}
+
+					// Đi ngược theo hướng
+					for (int step = 1; step <= 4; step++) {
+						int nx = i - dir[0] * step;
+						int ny = j - dir[1] * step;
+
+						if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+							if (_A[nx][ny].c == -1) count++;
+							else if (_A[nx][ny].c == 0 && emptyBackX == -1) {
+								emptyBackX = nx;
+								emptyBackY = ny;
+							}
+							else break;
+						}
+					}
+
+					// Nếu có 4 quân liên tiếp và 1 đầu trống -> chặn ngay
+					if (count == 4) {
+						if (emptyFrontX != -1) {
+							pX = emptyFrontX;
+							pY = emptyFrontY;
+							return true;
+						}
+						if (emptyBackX != -1) {
+							pX = emptyBackX;
+							pY = emptyBackY;
+							return true;
+						}
+					}
+
+					// Nếu có 3 quân liên tiếp và 2 đầu trống -> chặn ngay
+					if (count == 3 && emptyFrontX != -1 && emptyBackX != -1) {
+						pX = emptyFrontX;
+						pY = emptyFrontY;
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+// Hàm đánh giá điểm số cho nước đi
+int evaluate(int x, int y, int player) {
+	int score = 0;
+	for (auto dir : directions) {
+		score += countInLine(x, y, dir[0], dir[1], player);
+	}
+	return score;
+}
+
+// Thuật toán Minimax với Alpha-Beta Pruning
+int minimax(int depth, int alpha, int beta, bool isMaximizingPlayer) {
+	if (depth == MAX_DEPTH) {  // Điểm đánh giá tại độ sâu tối đa
+		int score = 0;
+		for (int i = 0; i < BOARD_SIZE; i++)
+			for (int j = 0; j < BOARD_SIZE; j++)
+				if (_A[i][j].c == 1) score += evaluate(i, j, 1);   // Bot
+				else if (_A[i][j].c == -1) score -= evaluate(i, j, -1);  // Đối thủ
+		return score;
+	}
+
+	if (isMaximizingPlayer) {  // Lượt của Bot
+		int maxEval = -10000;
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				if (_A[i][j].c == 0) {  // Nếu ô này trống
+					_A[i][j].c = 1;  // Đặt quân của Bot
+					int eval = minimax(depth + 1, alpha, beta, false);
+					_A[i][j].c = 0;  // Xóa quân của Bot
+					maxEval = max(maxEval, eval);
+					alpha = max(alpha, eval);
+					if (beta <= alpha) break;  // Cắt tỉa
+				}
+			}
+		}
+		return maxEval;
+	}
+	else {  // Lượt của đối thủ
+		int minEval = 10000;
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				if (_A[i][j].c == 0) {  // Nếu ô này trống
+					_A[i][j].c = -1;  // Đặt quân của đối thủ
+					int eval = minimax(depth + 1, alpha, beta, true);
+					_A[i][j].c = 0;  // Xóa quân của đối thủ
+					minEval = min(minEval, eval);
+					beta = min(beta, eval);
+					if (beta <= alpha) break;  // Cắt tỉa
+				}
+			}
+		}
+		return minEval;
+	}
+}
+
+// Bot tìm nước đi tối ưu
+void improvedBot(int _X, int _Y, int& pX, int& pY) {
+
+	int m, n;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].x == _X && _A[i][j].y == _Y) {
+				_A[i][j].c = 0;  // Xóa ký tự trong bảng
+				m = i;
+				n = j;
+			}
+		}
+	}
+	_A[m][n].c = -1;  // Đặt nước đi của đối thủ
+
+	// 1. Kiểm tra nếu Bot có thể tạo chuỗi 4 quân liên tiếp
+	bool canWin = false;
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].c == 1) {  // Nếu ô này là quân của Bot
+				for (auto dir : directions) {
+					int count = countInLine(i, j, dir[0], dir[1], 1);  // Đếm số quân liên tiếp của Bot
+
+					// Nếu Bot có đủ 3 quân liên tiếp
+					if (count == 3) {
+						int emptyFrontX = i + dir[0] * count;
+						int emptyFrontY = j + dir[1] * count;
+						int emptyBackX = i - dir[0] * count;
+						int emptyBackY = j - dir[1] * count;
+
+						// Kiểm tra nếu đầu trống và có thể đánh vào
+						if (emptyFrontX >= 0 && emptyFrontX < BOARD_SIZE && emptyFrontY >= 0 && emptyFrontY < BOARD_SIZE && _A[emptyFrontX][emptyFrontY].c == 0) {
+							pX = emptyFrontX;
+							pY = emptyFrontY;
+							canWin = true;
+							break;
+						}
+						if (emptyBackX >= 0 && emptyBackX < BOARD_SIZE && emptyBackY >= 0 && emptyBackY < BOARD_SIZE && _A[emptyBackX][emptyBackY].c == 0) {
+							pX = emptyBackX;
+							pY = emptyBackY;
+							canWin = true;
+							break;
+						}
+					}
+				}
+			}
+			if (canWin) break;
+		}
+		if (canWin) break;
+	}
+
+	if (!canWin) {
+		// 2. Kiểm tra và chặn đối thủ nếu không có nước đi tạo chuỗi 4
+		if (blockOpponent(pX, pY)) {
+			_A[pX][pY].c = 1;  // Bot đánh vào ô đó
+			return;
+		}
+	}
+
+	// 3. Nếu không thể chiến thắng, dùng Minimax để tìm nước đi tốt nhất
+	int bestScore = -10000;
+	pX = -1;
+	pY = -1;
+
+	for (int i = 0; i < BOARD_SIZE; i++) {
+		for (int j = 0; j < BOARD_SIZE; j++) {
+			if (_A[i][j].c == 0) {  // Nếu ô này trống
+				_A[i][j].c = 1;  // Đặt quân của Bot
+				int score = minimax(0, -10000, 10000, false);
+				_A[i][j].c = 0;  // Xóa quân của Bot
+				if (score > bestScore) {
+					bestScore = score;
+					pX = i;
+					pY = j;
+				}
+			}
+		}
+	}
+
+	_A[pX][pY].c = 1;  // Đặt quân của Bot
+}
+
+
 int searchAddressOfBoard(int pX, int pY, int& row, int& col) {
 	for (int i = 0; i < BOARD_SIZE; i++)
 	{

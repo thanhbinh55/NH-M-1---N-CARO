@@ -1,5 +1,8 @@
 ﻿#include "Draw.h"
 #include "SoundManager.h"
+#include "Timer.h"
+#include "Menu.h"
+
 void DrawScreen()
 {
 	FixConsoleWindow();
@@ -72,6 +75,7 @@ void DrawBoard(int pSize)
 }
 void DrawBound()
 {
+	SetColor(0, 15);
 	int x0 = 1;
 	int y0 = 1;
 	int w = 140;
@@ -109,6 +113,11 @@ void DrawGuideGame(int x, int y)
 	Draw_Guide(x + 30, y, text.selectText);
 	Draw_Guide(x + 30, y + 1, text.exitText);
 	Draw_Guide(x + 30, y + 2, text.saveText);
+
+	if (choicestyle == 0)//basic
+	{
+		Draw_Guide(x + 30, y + 3, text.undoText);
+	}
 }
 void Draw_Guide(int x, int y, string nd)
 {
@@ -122,21 +131,27 @@ void Draw_infor1(int x, int y, int w, int h)
 		GotoXY(x + 2, y + 1);
 		SetColor(15, 0);
 		cout << "Player 1 (X): ";
+		DrawChooseAvatar(Player_1, x + 2, y + 13);
+
 		GotoXY(x + 2 + 35, y + 1);
 		SetColor(1, 15);
 		cout << "Player 2 (O): ";
+		DrawWhite(x + 41, y + 17);
+
 	}
 	else
 	{
 		GotoXY(x + 2, y + 1);
 		SetColor(4, 15);
 		cout << "Player 1 (X): ";
+		DrawWhite(x + 6, y + 17);
 		GotoXY(x + 2 + 35, y + 1);
 		SetColor(15, 0);
 		cout << "Player 2 (O): ";
 		SetColor(1, 15);
+		DrawChooseAvatar(Player_2, x + 37, y + 13);
 	}
-	GotoXY(x + 2  + 15, y + 1);
+	GotoXY(x + 2 + 15, y + 1);
 	SetColor(4, 15);
 	cout << Player_1.Name;
 	Box(x, y, w, h + 3);
@@ -165,58 +180,129 @@ void Draw_infor1(int x, int y, int w, int h)
 	SetColor(0, 15);
 	DrawChooseAvatar(Player_2, x + 35, y);
 
-	
 }
 void Draw_infor(int x, int y, int w, int h)
 {
-		if (!_TURN) {
-			GotoXY(x + 2, y + 1);
-			SetColor(15, 0);
-			cout << "Player 1 (X): ";
-			GotoXY(x + 2 + 35, y + 1);
-			SetColor(1, 15);
-			cout << "Player 2 (O): ";
-		}
-		else
-		{
-			GotoXY(x + 2, y + 1);
-			SetColor(4, 15);
-			cout << "Player 1 (X): ";
+	if (!_TURN) {
+		GotoXY(x + 2, y + 1);
+		SetColor(15, 0);
+		cout << "Player 1 (X): ";
+		DrawChooseAvatar(Player_1, x + 2, y + 13);
 
-
-			GotoXY(x + 2 + 35, y + 1);
-			SetColor(15, 0);
-			cout << "Player 2 (O): ";
-			SetColor(1, 15);
-		}
-		GotoXY(x + 2 + 15, y + 1);
-		SetColor(4, 15);
-		cout << Player_1.Name;
-		Box(x, y, w, h + 3);
-		string s = "";
-		s = "Moves: " + to_string(Player_1.Moves);
-		GotoXY(x + 2, y + 2);
-		cout << s;
-		s = "Wins: " + to_string(Player_1.Wins);
-		GotoXY(x + 2, y + 3);
-		cout << s;
-		SetColor(0, 15);
-
-		DrawChooseAvatar(Player_1, x, y);
-		string s2 = "";
+		GotoXY(x + 2 + 35, y + 1);
 		SetColor(1, 15);
-		Box(x + 35, y, w, h + 3);
-		GotoXY(x + 2 + 35 + 15, y + 1);
-		cout << Player_2.Name;
-		s2 = "Moves: " + to_string(Player_2.Moves);
-		GotoXY(x + 2 + 35, y + 2);
-		cout << s2;
-		s2 = "Wins: " + to_string(Player_2.Wins);
-		GotoXY(x + 2 + 35, y + 3);
-		cout << s2;
-		SetColor(0, 15);
-		DrawChooseAvatar(Player_2, x + 35, y);
-	
+		cout << "Player 2 (O): ";
+		DrawWhite(x + 41, y + 17);
+
+	}
+	else
+	{
+		GotoXY(x + 2, y + 1);
+		SetColor(4, 15);
+		cout << "Player 1 (X): ";
+		DrawWhite(x + 6, y + 17);
+
+		GotoXY(x + 2 + 35, y + 1);
+		SetColor(15, 0);
+		cout << "Player 2 (O): ";
+		SetColor(1, 15);
+		DrawChooseAvatar(Player_2, x + 37, y + 13);
+	}
+	GotoXY(x + 2 + 15, y + 1);
+	SetColor(4, 15);
+	//cout << Player_1.Name;
+	//Box(x, y, w, h + 3);
+	string s = "";
+	s = "Moves: " + to_string(Player_1.Moves);
+	GotoXY(x + 2, y + 2);
+	cout << s;
+	s = "Wins: " + to_string(Player_1.Wins);
+	GotoXY(x + 2, y + 3);
+	cout << s;
+	SetColor(0, 15);
+
+	//DrawChooseAvatar(Player_1, x, y);
+	string s2 = "";
+	SetColor(1, 15);
+	//Box(x + 35, y, w, h + 3);
+	GotoXY(x + 2 + 35 + 15, y + 1);
+	//cout << Player_2.Name;
+	s2 = "Moves: " + to_string(Player_2.Moves);
+	GotoXY(x + 2 + 35, y + 2);
+	cout << s2;
+	s2 = "Wins: " + to_string(Player_2.Wins);
+	GotoXY(x + 2 + 35, y + 3);
+	cout << s2;
+	SetColor(0, 15);
+	//DrawChooseAvatar(Player_2, x + 35, y);
+
+}
+
+void HighlightPlayer(int x, int y, int w, int h) {
+	if (_TURN) {
+		GotoXY(x + 2, y + 1);
+		SetColor(15, 0);
+		cout << "Player 1 (X): ";
+		DrawChooseAvatar(Player_1, x + 2, y + 13);
+
+		GotoXY(x + 2 + 35, y + 1);
+		SetColor(1, 15);
+		cout << "Player 2 (O): ";
+		DrawWhite(x + 41, y + 17);
+
+	}
+	else
+	{
+		GotoXY(x + 2, y + 1);
+		SetColor(4, 15);
+		cout << "Player 1 (X): ";
+		DrawWhite(x + 6, y + 17);
+		GotoXY(x + 2 + 35, y + 1);
+		SetColor(15, 0);
+		cout << "Player 2 (O): ";
+		SetColor(1, 15);
+		DrawChooseAvatar(Player_2, x + 37, y + 13);
+	}
+}
+void DrawWhite(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+
+	int matrix[22][22] = {
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15},
+		   {15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 22; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 22; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
 }
 void DrawRedDragon(int x, int y) {
 	// Khai báo mảng 12x14 với các giá trị đã cho
@@ -621,7 +707,52 @@ void DrawDragonMen(int x, int y)
 	}
 	SetConsoleOutputCP(437);
 }
+void DrawGameMode(int x, int y, int choicestyle, int choicegame)
+{
+	if (choicegame == 0) {//PvP
+		if (choicestyle == 0)//basic
+		{
+			screenMutex.lock();
+			SetColor(0, 15);
+			Box(x, y, 63, 2);
+			GotoXY(x + 1, y + 1);
+			cout << text.gamemode; SetColor(4, 14); cout << "PvP"; SetColor(0, 15); cout << "  " << text.gamestyle; SetColor(4, 14); cout << text.basicStyle; SetColor(0, 15); cout << "  " << text.gametime; SetColor(4, 14); cout << "..."; SetColor(0, 15); cout << "  " << text.turntime; SetColor(4, 14); cout << "..." << endl;
+			screenMutex.unlock();
+		}
+		else
+		{
+			screenMutex.lock();
+			SetColor(0, 15);
+			Box(x, y, 63, 2);
+			GotoXY(x + 1, y + 1);
+			cout << text.gamemode; SetColor(4, 14); cout << "PvP"; SetColor(0, 15); cout << "   " << text.gamestyle; SetColor(4, 14); cout << text.speedUpStyle;
+			screenMutex.unlock();
+		}
+	}
+	else {
+		{//PvC
+			if (choicestyle == 0)//basic
+			{
+				screenMutex.lock();
+				SetColor(0, 15);
+				Box(x, y, 63, 2);
+				GotoXY(x + 1, y + 1);
+				cout << text.gamemode; SetColor(4, 14); cout << "PvC"; SetColor(0, 15); cout << "  " << text.gamestyle; SetColor(4, 14); cout << text.basicStyle; SetColor(0, 15); cout << "  " << text.gametime; SetColor(4, 14); cout << "..."; SetColor(0, 15); cout << "  " << text.turntime; SetColor(4, 14); cout << "..." << endl;
+				screenMutex.unlock();
+			}
+			else
+			{
+				screenMutex.lock();
+				SetColor(0, 15);
+				Box(x, y, 63, 2);
+				GotoXY(x + 1, y + 1);
+				cout << text.gamemode; SetColor(4, 14); cout << "PvC"; SetColor(0, 15); cout << "   " << text.gamestyle; SetColor(4, 14); cout << text.speedUpStyle;
+				screenMutex.unlock();
+			}
+		}
+	}
 
+}
 void DrawLogoCaro(int x, int y) {
 
 	// Ma trận 16x54 với các giá trị từ bảng số bạn cung cấp
@@ -662,18 +793,18 @@ void DrawLogoCaro(int x, int y) {
 void DrawDRAW(int x, int y) {
 	int matrix[14][52] = {
 {0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0},
-{0, 15, 15, 12, 12, 12, 12, 0, 0, 15, 15, 15, 0, 15, 15, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 0, 15, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 15, 15, 12, 12, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 0},
-{0, 15, 15, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 15, 15, 12, 4, 12, 12, 12, 12, 0, 15, 15, 0, 15, 15, 12, 12, 12, 12, 12, 12, 0, 15, 15, 0, 15, 15, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 12, 12, 0},
-{0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 12, 12, 0},
-{0, 12, 12, 12, 4, 12, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 0, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 0, 4, 12, 12, 12, 0, 12, 12, 12, 12, 0, 12, 12, 12, 4, 0},
-{0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 4, 12, 12, 12, 0, 12, 12, 12, 12, 0, 12, 12, 12, 4, 0},
-{0, 12, 12, 12, 0, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 4, 0, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 0, 12, 12, 12, 0, 12, 12, 12, 12, 0, 12, 12, 12, 0, 0},
-{0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 4, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15},
-{0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 15, 0, 4, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 4, 0, 15},
-{0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 12, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 15, 0, 4, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 4, 0, 15},
-{0, 12, 12, 12, 12, 12, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 4, 4, 12, 12, 12, 0, 15, 15, 15, 0, 0, 12, 12, 12, 12, 4, 4, 12, 12, 12, 12, 0, 0, 15},
-{0, 12, 12, 12, 12, 12, 12, 12, 0, 0, 15, 15, 0, 12, 12, 12, 0, 4, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 15, 15, 0, 12, 12, 12, 4, 0, 0, 4, 12, 12, 12, 0, 15, 15},
-{0, 12, 12, 12, 12, 12, 12, 0, 0, 15, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 0, 12, 12, 12, 0, 0, 12, 12, 12, 0, 15, 15, 15, 15, 0, 4, 4, 4, 0, 0, 0, 0, 4, 4, 4, 0, 15, 15},
+{0, 15, 15, 14, 14, 14, 14, 0, 0, 15, 15, 15, 0, 15, 15, 14, 14, 14, 14, 14, 0, 0, 15, 15, 0, 0, 15, 14, 14, 14, 14, 14, 0, 0, 15, 15, 0, 15, 15, 14, 14, 0, 0, 0, 0, 0, 0, 14, 14, 14, 14, 0},
+{0, 15, 15, 14, 14, 14, 14, 14, 0, 0, 15, 15, 0, 15, 15, 14, 6, 14, 14, 14, 14, 0, 15, 15, 0, 15, 15, 14, 14, 14, 14, 14, 14, 0, 15, 15, 0, 15, 15, 14, 14, 0, 0, 14, 14, 0, 0, 14, 14, 14, 14, 0},
+{0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 14, 0, 0, 14, 14, 0, 0, 14, 14, 14, 14, 0},
+{0, 14, 14, 14, 6, 14, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 0, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 0, 6, 14, 14, 14, 0, 14, 14, 14, 14, 0, 14, 14, 14, 6, 0},
+{0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 6, 14, 14, 14, 0, 14, 14, 14, 14, 0, 14, 14, 14, 6, 0},
+{0, 14, 14, 14, 0, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 6, 0, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 0, 14, 14, 14, 0, 14, 14, 14, 14, 0, 14, 14, 14, 0, 0},
+{0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 6, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15},
+{0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 0, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 15, 0, 6, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 6, 0, 15},
+{0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 14, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 15, 0, 6, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 6, 0, 15},
+{0, 14, 14, 14, 14, 14, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 6, 6, 14, 14, 14, 0, 15, 15, 15, 0, 0, 14, 14, 14, 14, 6, 6, 14, 14, 14, 14, 0, 0, 15},
+{0, 14, 14, 14, 14, 14, 14, 14, 0, 0, 15, 15, 0, 14, 14, 14, 0, 6, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 15, 15, 0, 14, 14, 14, 6, 0, 0, 6, 14, 14, 14, 0, 15, 15},
+{0, 14, 14, 14, 14, 14, 14, 0, 0, 15, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 0, 14, 14, 14, 0, 0, 14, 14, 14, 0, 15, 15, 15, 15, 0, 6, 6, 6, 0, 0, 0, 0, 6, 6, 6, 0, 15, 15},
 {0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0, 15, 15, 0, 0, 0, 0, 0, 15, 15}
 	};
 
@@ -719,11 +850,12 @@ void clearSelectionBox(int x, int y) {
 void ChooseAvatar() {
 	system("cls");
 	system("color f0");
-	Draw_Guide(50, 37, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText);
+	//Draw_Guide(50, 37, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText);
+	Draw_Guide(43, 37, text.moveUpText + ", " + text.moveDownText + ", " + text.selectText + ", " + text.goBackText);
 	ShowCur(false);
 	DrawBound();
-	int positions[8][2] = { {15, 8}, {45, 8}, {75, 8}, {105, 8},
-							{15, 23}, {45, 23}, {75, 23}, {105, 23} };
+	int positions[8][2] = { {15, 9}, {45, 8}, {75, 8}, {105, 9},
+							{15, 25}, {45, 23}, {75, 23}, {105, 24} };
 	string labels[8] = {
 		"Red", "Green", "Yellow", "Black",
 		"Blue", "Pig", "Dragon", "Pikachu"
@@ -749,7 +881,7 @@ void ChooseAvatar() {
 
 	while (s == true) {
 		if (_kbhit) {
-			char key = _getch();
+			char key = toupper(_getch());
 
 			// Xóa khung chọn cũ
 			clearSelectionBox(positions[currentPos][0], positions[currentPos][1]);
@@ -757,7 +889,7 @@ void ChooseAvatar() {
 			// Cập nhật vị trí mới
 
 
-			if (key == 'a') {
+			if (key == 'A') {
 				playMoveSound();
 				// Di chuyển sang trái
 				if (currentPos == 4) currentPos = 3;  // Chuyển từ đầu dòng 2 (ô thứ 4) sang cuối dòng 1 (ô thứ 3)
@@ -766,7 +898,7 @@ void ChooseAvatar() {
 				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
 
 			}
-			else if (key == 's') {
+			else if (key == 'S') {
 				playMoveSound();
 				// Di chuyển xuống
 				if (currentPos >= 0 && currentPos <= 3) currentPos += 4;
@@ -775,7 +907,7 @@ void ChooseAvatar() {
 				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
 
 			}
-			else if (key == 'w') {
+			else if (key == 'W') {
 				playMoveSound();
 				// Di chuyển lên
 				if (currentPos >= 4 && currentPos <= 7) currentPos -= 4;
@@ -783,7 +915,7 @@ void ChooseAvatar() {
 				drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
 
 			}
-			else if (key == 'd') {
+			else if (key == 'D') {
 				playMoveSound();
 				clearSelectionBox(positions[currentPos][0], positions[currentPos][1]);
 
@@ -812,10 +944,15 @@ void ChooseAvatar() {
 					count++;
 					playerturn = (playerturn == 1) ? 2 : 1;
 					GotoXY(60, 2);
-					cout << "Chon thanh cong";
+					cout << text.choosecharacter;
 
 				}
-		
+
+			}
+			else if (key == 'B') { // 27 là mã của phím ESC
+				system("cls");
+				ChooseGame();
+				return;
 			}
 
 			drawSelectionBox(positions[currentPos][0], positions[currentPos][1], playerturn == 1 ? 12 : 1);
@@ -828,38 +965,42 @@ void ChooseAvatar() {
 		}
 
 	}
-
 }
-void DrawChooseAvatar(const Player& Player, int x, int y){
+void DrawChooseAvatar(const Player& Player, int x, int y) {
 	if (Player.Character == "Red") {
 		DrawRedBoom(x + 4, y + 5);
 	}
-	else if(Player.Character == "Green") {
-		DrawGreenBoom(x + 4, y + 5);
+	else if (Player.Character == "Green") {
+		DrawGreenBoom(x + 4, y + 4);
 	}
 	else if (Player.Character == "Yellow") {
-		DrawYellowBoom(x + 4, y + 5);
+		DrawYellowBoom(x + 4, y + 4);
 	}
 	else if (Player.Character == "Black") {
-		DrawBlackBoom(x + 4, y + 5);
+		DrawBlackBoom(x + 4, y + 4);
 	}
 	else if (Player.Character == "Blue") {
 		DrawBlueBoom(x + 4, y + 5);
 	}
 	else if (Player.Character == "Pig") {
-		DrawPig(x + 4, y + 5);
+		DrawPig(x + 4, y + 4);
 	}
 	else if (Player.Character == "Dragon") {
-		DrawRedDragon(x + 4, y + 5);
+		DrawRedDragon(x + 4, y + 4);
 	}
 	else if (Player.Character == "Pikachu") {
-		DrawPikachu(x + 4, y + 5);
+		DrawPikachu(x + 4, y + 4);
 	}
 }
 void vechuwin(int x, int y) {
 	vechuW(x, y);
 	vechuI(x + 15, y);
 	vechuN(x + 24, y);
+}
+void vechuwinO(int x, int y) {
+	vechuWO(x, y);
+	vechuIO(x + 15, y);
+	vechuNO(x + 24, y);
 }
 void vechuW(int x, int y) {
 	// Khai báo mảng 12x14 với các giá trị đã cho
@@ -948,6 +1089,94 @@ void vechuN(int x, int y) {
 	}
 	SetConsoleOutputCP(437);
 }
+
+void vechuWO(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[12][14] = {
+		{0, 0, 0, 0, 0, 15, 15, 15, 15, 0, 0, 0, 0, 0},
+		{0, 15, 15, 9, 0, 15, 15, 15, 15, 0, 9, 15, 15, 0},
+		{0, 15, 15, 9, 0, 0, 0, 0, 0, 0, 9, 15, 15, 0},
+		{0, 9, 9, 9, 0, 0, 9, 9, 0, 0, 9, 9, 9, 0},
+		{0, 1, 9, 9, 0, 0, 9, 9, 0, 0, 9, 9, 1, 0},
+		{0, 0, 9, 9, 0, 9, 9, 9, 9, 0, 9, 9, 0, 0},
+		{15, 0, 9, 9, 0, 9, 9, 9, 9, 0, 9, 9, 0, 15},
+		{15, 0, 1, 9, 9, 9, 1, 1, 9, 9, 9, 1, 0, 15},
+		{15, 0, 0, 9, 9, 1, 0, 0, 1, 9, 9, 0, 0, 15},
+		{15, 15, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 15, 15},
+		{15, 15, 0, 0, 0, 0, 15, 15, 0, 0, 0, 0, 15, 15},
+		{15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 14; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void vechuIO(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[12][7] = {
+		{0, 0, 0, 0, 0, 0, 0},
+		{0, 15, 15, 15, 15, 15, 0},
+		{0, 1, 15, 15, 15, 1, 0},
+		{0, 0, 9, 9, 9, 0, 0},
+		{15, 0, 9, 9, 9, 0, 15},
+		{15, 0, 9, 9, 9, 0, 15},
+		{15, 0, 9, 9, 9, 0, 15},
+		{0, 0, 9, 9, 9, 0, 0},
+		{0, 9, 9, 9, 9, 9, 0},
+		{0, 1, 1, 1, 1, 1, 0},
+		{0, 0, 0, 0, 0, 0, 0},
+		{15,15,15,15,15,15,15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 7; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
+void vechuNO(int x, int y) {
+	// Khai báo mảng 12x14 với các giá trị đã cho
+	int matrix[12][10] = {
+		 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		 {0, 15, 15, 9, 0, 0, 9, 9, 9, 0},
+		 {0, 15, 15, 9, 0, 0, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 9, 0, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 9, 9, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 9, 9, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 1, 9, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 0, 1, 9, 9, 9, 0},
+		 {0, 9, 9, 9, 0, 0, 9, 9, 9, 0},
+		 {0, 1, 1, 1, 0, 0, 1, 1, 1, 0},
+		 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		 {15, 15, 15, 15, 15, 15, 15, 15, 15, 15}
+	};
+
+	SetConsoleOutputCP(CP_UTF8);
+	for (int i = 0; i < 12; i = i + 2)
+	{
+		GotoXY(x, y + i / 2);
+		for (int x = 0; x < 10; x++)
+		{
+			SSetColor(matrix[i][x], matrix[i + 1][x]);
+			cout << u8"▄";
+		}cout << endl;
+	}
+	SetConsoleOutputCP(437);
+}
 void vechuX(int x, int y) {
 	// Khai báo ma trận 12x11
 	int matrix[12][11] = {
@@ -982,15 +1211,15 @@ void vechuO(int x, int y) {
 	// Khai báo ma trận 12x11
 	int matrix[12][9] = {
 	{15, 0, 0, 0, 0, 0, 0, 0, 15},
-	{0, 0, 15, 12, 12, 12, 12, 0, 0},
-	{0, 15, 15, 12, 12, 12, 12, 12, 0},
-	{0, 12, 12, 12, 4, 12, 12, 12, 0},
-	{0, 12, 12, 12, 0, 12, 12, 12, 0},
-	{0, 12, 12, 12, 0, 12, 12, 12, 0},
-	{0, 12, 12, 12, 0, 12, 12, 12, 0},
-	{0, 12, 12, 12, 12, 12, 12, 12, 0},
-	{0, 4, 12, 12, 12, 12, 12, 4, 0},
-	{0, 0, 4, 4, 4, 4, 4, 0, 0},
+	{0, 0, 15, 9, 9, 9, 9, 0, 0},
+	{0, 15, 15, 9, 9, 9, 9, 9, 0},
+	{0, 9, 9, 9, 1, 9, 9, 9, 0},
+	{0, 9, 9, 9, 0, 9, 9, 9, 0},
+	{0, 9, 9, 9, 0, 9, 9, 9, 0},
+	{0, 9, 9, 9, 0, 9, 9, 9, 0},
+	{0, 9, 9, 9, 9, 9, 9, 9, 0},
+	{0, 1, 9, 9, 9, 9, 9, 1, 0},
+	{0, 0, 1, 1, 1, 1, 1, 0, 0},
 	{15, 0, 0, 0, 0, 0, 0, 0, 15},
 	{15, 15, 15, 15, 15, 15, 15, 15, 15}
 	};
@@ -1016,23 +1245,23 @@ void Xwin(int x, int y) {
 }
 void Owin(int x, int y) {
 	vechuO(x, y);
-	vechuwin(x + 18, y);
+	vechuwinO(x + 18, y);
 	SetColor(0, 15);  // Reset màu s?c v? m?c ??nh
 	SetConsoleOutputCP(437);
 }
 void bangtrang(int x, int y) {
-	int matrix[14][60];
-	for (int i = 0; i < 14; ++i) {
-		for (int j = 0; j < 55; ++j) {
+	int matrix[18][61];
+	for (int i = 0; i < 18; ++i) {
+		for (int j = 0; j < 59; ++j) {
 			matrix[i][j] = 15;
 		}
 	}
 
 	SetConsoleOutputCP(CP_UTF8);
-	for (int i = 0; i < 14; i = i + 2)
+	for (int i = 0; i < 18; i = i + 2)
 	{
 		GotoXY(x, y + i / 2);
-		for (int x = 0; x < 55; x++)
+		for (int x = 0; x < 58; x++)
 		{
 			SSetColor(matrix[i][x], matrix[i + 1][x]);
 			cout << u8"▄";
@@ -1042,36 +1271,36 @@ void bangtrang(int x, int y) {
 }
 
 void nhapnhayO(int x, int y) {
-	/*while (true) {
 
-	}*/
-	for (int i = 1; i < 11; i++) {
+	for (int i = 1; i < 6; i++) {
+		bangtrang(x, y - 2);
+		this_thread::sleep_for(chrono::milliseconds(300));
 		Owin(x, y);
 		this_thread::sleep_for(chrono::milliseconds(300));
-		bangtrang(x, y);
+		bangtrang(x, y - 2);
 		this_thread::sleep_for(chrono::milliseconds(300));
 		//this_thread::sleep_for(chrono::milliseconds(500));
 		Owin(x, y);
 	}
 }
 void nhapnhayX(int x, int y) {
-	/*while (true) {
-
-	}*/
-	for (int i = 1; i < 11; i++) {
+	for (int i = 1; i < 6; i++) {
+		bangtrang(x, y - 2);
+		this_thread::sleep_for(chrono::milliseconds(300));
 		Xwin(x, y);
 		this_thread::sleep_for(chrono::milliseconds(300));
-		bangtrang(x, y);
+		bangtrang(x, y - 2);
 		this_thread::sleep_for(chrono::milliseconds(300));
-		//this_thread::sleep_for(chrono::milliseconds(500));
 		Xwin(x, y);
 	}
 }
 void nhapnhayDRAW(int x, int y) {
-	for (int i = 1; i < 11; i++) {
+	for (int i = 1; i < 6; i++) {
+		bangtrang(x, y - 1);
+		this_thread::sleep_for(chrono::milliseconds(300));
 		DrawDRAW(x, y);
 		this_thread::sleep_for(chrono::milliseconds(300));
-		bangtrang(x, y);
+		bangtrang(x, y - 1);
 		this_thread::sleep_for(chrono::milliseconds(300));
 		//this_thread::sleep_for(chrono::milliseconds(500));
 		DrawDRAW(x, y);
@@ -1132,19 +1361,229 @@ void DrawLoaded(_POINT _A[][BOARD_SIZE])
 	DrawBound();
 	DrawBoard(BOARD_SIZE); // Vẽ màn hình game
 	DrawGuideGame(3, 35);
-	Draw_infor1(70, 3, 28, 13);
+	Draw_infor1(70, 6, 28, 12);
+	DrawGameMode(70, 3, choicestyle, choicegame);
 	for (int i = 0; i < BOARD_SIZE; i++) {
 		for (int j = 0; j < BOARD_SIZE; j++) {
 			if (_A[i][j].c == -1) {
 				SetColor(4, 15);
 				GotoXY(_A[i][j].x, _A[i][j].y);
 				cout << "X";
+				_A[i][j].value = 'X';
 			}
 			else if (_A[i][j].c == 1) {
 				SetColor(1, 15);
 				GotoXY(_A[i][j].x, _A[i][j].y);
 				cout << "O";
+				_A[i][j].value = 'X';
 			}
 		}
 	}
+}
+void vechuSAVE(int x, int y) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x, y);
+	SSetColor(15, 4);
+	cout << u8R"(             
+                                               ║█████   ║█████   ║██       ██  ║██████
+                                              ║██      ║██   ██  ║██       ██  ║██
+                                              ║██      ║██   ██   ║██     ██   ║██
+                                                ║██    ║███████   ║██     ██   ║██████
+                                                  ║██  ║██   ██    ║██   ██    ║██            
+                                                  ║██  ║██   ██    ║██   ██    ║██
+                                              ║█████   ║██   ██     ║█████     ║██████                                                                                                                          
+ )";
+	SetConsoleOutputCP(437);
+	SetColor(0, 15);
+	DrawBound();
+}
+void vechuLOAD(int x, int y) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x, y);
+	SSetColor(15, 4);
+	cout << u8R"(                                                                                                                                                 
+							║██      ║█████    ║█████  ║██████                                       
+							║██     ║██   ██  ║██   ██ ║██   ██                                      
+							║██     ║██   ██  ║██   ██ ║██   ██                                      
+							║██     ║██   ██  ║███████ ║██   ██                                      
+							║██     ║██   ██  ║██   ██ ║██   ██                                      
+							║██     ║██   ██  ║██   ██ ║██   ██                                      
+							║██████  ║█████   ║██   ██ ║██████                                                                                                                                                                                                                                                                                                                                        
+ )";
+	SetConsoleOutputCP(437);
+}
+void vechuSETTING(int x, int y) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x, y);
+	SSetColor(15, 4);
+	cout << u8R"(                                                                                                                                                                                                                                   
+                                                                          ║██                              
+                                                                                
+                                         ║█████  ║██████ ║██████ ║██████  ║██  ║███     ██   ║██████       
+                                        ║██      ║██       ║██     ║██    ║██  ║████    ██  ║██    ██      
+                                        ║██      ║██       ║██     ║██    ║██  ║██ ██   ██  ║██            
+                                          ║██    ║██████   ║██     ║██    ║██  ║██  ██  ██  ║██            
+                                            ║██  ║██       ║██     ║██    ║██  ║██   ██ ██  ║██   ████     
+                                            ║██  ║██       ║██     ║██    ║██  ║██    ████  ║██    ██      
+                                        ║█████   ║██████   ║██     ║██    ║██  ║██     ███   ║██████                                                                                                                                                                                                                                                                                                                                                                                                                                 
+ )";
+	SetConsoleOutputCP(437);
+}
+void vechuABOUT(int x, int y) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x, y);
+	SSetColor(15, 4);
+	cout << u8R"(                                                                                                                                                                                                                           
+						 ║█████   ║██████    ║█████   ║██   ██  ║██████                             
+						║██   ██  ║██   ██  ║██   ██  ║██   ██    ║██                               
+						║██   ██  ║██   ██  ║██   ██  ║██   ██    ║██                               
+						║███████  ║██████   ║██   ██  ║██   ██    ║██                               
+						║██   ██  ║██   ██  ║██   ██  ║██   ██    ║██                               
+						║██   ██  ║██   ██  ║██   ██  ║██   ██    ║██                               
+						║██   ██  ║██████    ║█████    ║█████     ║██                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+ )";
+	SetConsoleOutputCP(437);
+}
+void vechuHELP(int x, int y) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x, y);
+	SSetColor(15, 4);
+	cout << u8R"(                                                                                                                                                                                                                                                                                             
+						║██   ██  ║██████  ║██    ║████████                                    
+						║██   ██  ║██      ║██      ║██   ██                                   
+						║██   ██  ║██      ║██      ║██   ██                                   
+						║███████  ║██████  ║██      ║██████                                    
+						║██   ██  ║██      ║██      ║██                                        
+						║██   ██  ║██      ║██      ║██                                        
+						║██   ██  ║██████  ║██████  ║██                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+ )";
+	SetConsoleOutputCP(437);
+}
+
+void GHICHU(int x, int y, int a, int b) {
+	SetConsoleOutputCP(CP_UTF8);
+	GotoXY(x + 2, y);
+	cout << text.name; SetColor(4, 14);
+	GotoXY(x + 24, y);
+	cout << Player_1.Name; SetColor(0, 15);
+	GotoXY(x + 47, y);
+	cout << u8"║";
+	GotoXY(x + 70, y);
+	SetColor(1, 14);
+	GotoXY(x + 70, y);
+	cout << Player_2.Name; SetColor(0, 15);
+	GotoXY(x + 47, y + 3);
+	cout << u8"║";
+	GotoXY(x + 47, y + 4);
+	cout << u8"║";
+	GotoXY(x + 47, y + 5);
+	cout << u8"║";
+	GotoXY(x + 47, y + 6);
+	cout << u8"║";
+	GotoXY(x + 47, y + 7);
+	cout << u8"║";
+	GotoXY(x + 47, y + 8);
+	cout << u8"║";
+	GotoXY(x + 47, y + 8);
+	cout << u8"║";
+	GotoXY(x + 47, y + 9);
+	cout << u8"║";
+	GotoXY(x + 47, y + 10);
+	cout << u8"║";
+	GotoXY(x + 47, y + 11);
+	cout << u8"║";
+	GotoXY(x + 47, y + 12);
+	cout << u8"║";
+	GotoXY(x + 2, y + 17);
+	cout << text.score; SetColor(4, 14);
+	GotoXY(x + 22, y + 17);
+	cout << Player_1.Wins; SetColor(0, 15);
+	GotoXY(x + 47, y + 17);
+	cout << u8"║";
+	GotoXY(x + 70, y + 17);
+	SetColor(1, 14);
+	GotoXY(x + 68, y + 17);
+	cout << Player_2.Wins; SetColor(0, 15);
+	if (a == 0) {
+		if (b == 0) {
+			GotoXY(x + 2, y + 19);
+			cout << text.gamestyle; SetColor(4, 14);
+			GotoXY(x + 45, y + 19);
+			cout << text.basicStyle; SetColor(0, 15);
+		}
+		else {
+			GotoXY(x + 45, y + 19);
+			cout << text.speedUpStyle; SetColor(0, 15);
+		}
+		GotoXY(x + 2, y + 21);
+		cout << text.gamemode; SetColor(4, 14);
+		GotoXY(x + 46, y + 21);
+		cout << "PvP"; SetColor(0, 15);
+	}
+	else {
+		if (b == 0) {
+			GotoXY(x + 2, y + 19);
+			cout << text.gamestyle; SetColor(4, 14);
+			GotoXY(x + 45, y + 19);
+			cout << text.basicStyle; SetColor(0, 15);
+		}
+		else {
+			GotoXY(x + 45, y + 19);
+			cout << text.speedUpStyle; SetColor(0, 15);
+		}
+		GotoXY(x + 2, y + 21);
+		cout << text.gamemode; SetColor(4, 14);
+		GotoXY(x + 46, y + 21);
+		cout << "PvC"; SetColor(0, 15);
+	}
+	GotoXY(x + 2, y + 15);
+	cout << text.move << endl;
+	GotoXY(x + 47, y + 15);
+	cout << u8"║";
+	SetConsoleOutputCP(437);
+}
+void drawBangthongbao(int x, int y, int w, int h, int a, int choicegame, int choicestyle) {
+	system("cls");
+	DrawBound();
+	Box(x - 10, y - 5, w + 15, h + 7);
+	GHICHU(22, 9, choicegame, choicestyle);
+	DrawChooseAvatar(Player_1, 25, 7);
+	DrawChooseAvatar(Player_2, 80, 7);
+	switch (a)
+	{
+	case -1:
+		GotoXY(55, 7);
+		SetColor(4, 14);
+		cout << text.player << ": " << Player_1.Name << " (X) " << text.announce;
+		SetColor(0, 15);
+		GotoXY(44, 15 + 9);	SetColor(4, 14);
+		cout << Player_1.Moves << endl; SetColor(0, 15);
+		GotoXY(90, 15 + 9);	SetColor(1, 14);
+		cout << Player_2.Moves << endl; SetColor(0, 15);
+		break;
+	case 1:
+		GotoXY(55, 7);
+		SetColor(1, 14);
+		cout << text.player << ": " << Player_2.Name << " (O) " << text.announce; SetColor(0, 15);
+		GotoXY(44, 15 + 9);	SetColor(4, 14);
+		cout << Player_1.Moves << endl; SetColor(0, 15);
+		GotoXY(90, 15 + 9);	SetColor(1, 14);
+		cout << Player_2.Moves << endl; SetColor(0, 15);
+		break;
+	case 0:
+		DrawBound();
+		//Box(x, y, w, h);
+		GotoXY(50, 7);
+		SetColor(6, 15);
+		cout << text.player << ": " << Player_1.Name << " (X) " << text.announce1 << Player_2.Name << " (O) "; SetColor(0, 15);
+		GotoXY(90, 15 + 9);
+		GotoXY(44, 15 + 9);	SetColor(4, 14);
+		cout << Player_1.Moves << endl; SetColor(0, 15);
+		SetColor(1, 14);
+		cout << Player_2.Moves << endl; SetColor(0, 15);
+		break;
+	default:
+		break;
+	}
+
 }

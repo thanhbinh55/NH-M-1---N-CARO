@@ -9,9 +9,10 @@
 int main()
 {
 	selectLanguage();
-	playBackgroundMusic(true);
+	playBackgroundMusic(true,a1);
 	DrawScreen();
 	MainMenu();
+	system("color f0");
 	system("pause");
 	return 0;
 } 
